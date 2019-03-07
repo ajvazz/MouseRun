@@ -2,5 +2,5 @@
 
 Cat::Cat()
 {
-
+    setZValue(5);
 }

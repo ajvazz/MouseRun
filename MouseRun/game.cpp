@@ -2,6 +2,7 @@
 
 #include "cheese.h"
 #include "mousetrap.h"
+#include "waterpool.h"
 #include <QTimer>
 #include <QDebug>
 #include <QRandomGenerator>
@@ -16,6 +17,7 @@ Game::Game()
     setAlignment(Qt::AlignCenter);
 
     setFixedSize(width, height);
+    scene->setSceneRect(-300,-300,600,600);
     setScene(scene);
 
     // Turn off the scrollbars
@@ -30,9 +32,6 @@ void Game::start()
 {
     // Spawn player
     player = new Player();
-    player->setFlag(QGraphicsItem::ItemIsFocusable);
-    player->setFocus();
-    player->setZValue(1);
     scene->addItem(player);
 
     // Update the Game every 15 ms
@@ -44,6 +43,16 @@ void Game::start()
     static QTimer spawnTimer;
     connect(&spawnTimer, SIGNAL(timeout()), this, SLOT(spawnObjects()));
     spawnTimer.start(1500);
+
+    // Setup left and right bound
+    boundW = 500;
+    leftBound = new WaterBound(1000, boundW);
+    rightBound = new WaterBound(1000, boundW);
+    leftBound->setPos(-boundW, 0);
+    rightBound->setPos(boundW, 0);
+
+    scene->addItem(leftBound);
+    scene->addItem(rightBound);
 
     // Show the scene
     show();
@@ -68,22 +77,34 @@ void Game::update()
     }
 
     // Center the view on the player
-    centerOn(player);
+//    centerOn(player);
+
+    // Reset bounds positions so they appear to be infinite
+    leftBound->setPos(leftBound->pos().x(), 0);
+    rightBound->setPos(rightBound->pos().x(), 0);
+
+    qDebug() << scene->items().size();
 
 }
 
 void Game::spawnObjects()
 {
-    if(QRandomGenerator::global()->bounded(1.0) < 0.3){
-        MouseTrap *trap = new MouseTrap();
-        trap->setPos(QRandomGenerator::global()->bounded(width()), player->pos().y() - 500);
-        trap->setRotation(QRandomGenerator::global()->bounded(1.0));
-        scene->addItem(trap);
+    qreal p = QRandomGenerator::global()->bounded(1.0);
 
-    }else{
-        Cheese *cheese = new Cheese();
-        cheese->setPos(QRandomGenerator::global()->bounded(width()), player->pos().y() - 500);
-        scene->addItem(cheese);
+    QGraphicsItem *item;
 
+    if(p < 0.2){
+        item = new MouseTrap();
+
+    }else if (p < 0.8){
+        item = new Cheese();
+
+    } else{
+        item = new WaterPool(QRandomGenerator::global()->bounded(30, 100), QRandomGenerator::global()->bounded(30, 130));
     }
+
+
+    item->setRotation(QRandomGenerator::global()->bounded(-180, 180));
+    item->setPos(QRandomGenerator::global()->bounded(int(leftBound->pos().x() + boundW/2), int(rightBound->pos().x() - boundW/2)), player->pos().y() - 500);
+    scene->addItem(item);
 }

@@ -1,6 +1,7 @@
 #include "player.h"
 #include "cheese.h"
 #include "mousetrap.h"
+#include "waterpool.h"
 #include <QPainter>
 #include <QRandomGenerator>
 #include <QGraphicsScene>
@@ -13,11 +14,18 @@ const int Player::maxEnergy = 10;
 const qreal Player::turningAngle = 0.5;
 const qreal Player::consumption = 0.01;
 
-Player::Player(): angle(0), jumping(false), energy(5),
+Player::Player(): angle(0), energy(5),
     // Pick random colors for ears and body
     color(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
-    color2(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256))
+    color2(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
+    jumping(false), inWater(false)
 {
+    setZValue(1);
+
+    setPos(0, 0);
+    setFlag(QGraphicsItem::ItemIsFocusable);
+    setFocus();
+
     // Move the player every 15 miliseconds
     static QTimer moveTimer;
     connect(&moveTimer, SIGNAL(timeout()), this, SLOT(move()));
@@ -123,6 +131,7 @@ void Player::keyReleaseEvent(QKeyEvent *event)
     }
 }
 
+
 void Player::move()
 {
 
@@ -133,7 +142,7 @@ void Player::move()
     static const int maxJumpTime = 15;
 
     // Start/continue the animation if there is enough energy
-    if(((keysDown['j'] && jumpTime == 0) || jumping) && energy > 0){
+    if(((keysDown['j'] && jumpTime == 0) || jumping) && energy > 0 && (!inWater || jumping)){
 
         if(!jumping){
             jumping = true; // Start
@@ -149,12 +158,7 @@ void Player::move()
         }
 
         // Jump moves the player forward = moves everything else backward
-//        setPos(mapToParent(0, -speed));
-
-        foreach(QGraphicsItem* item, scene()->items()){
-            if(item != this)
-            item->setPos(item->pos() + mapToParent(0, speed));
-        }
+        moveAllItems(maxSpeed);
 
         jumpTime++; // Time passes...
 
@@ -171,19 +175,11 @@ void Player::move()
     // MOVE
     // Move forward = Move everything else backward
     if(keysDown['w'] && !keysDown['s']){
-//        setPos(mapToParent(0, -speed));
-        foreach(QGraphicsItem* item, scene()->items()){
-            if(item != this)
-            item->setPos(item->pos() + mapToParent(0, speed));
-        }
+        moveAllItems(speed);
     }
     // Move backward = Move everything else forward
     else if(keysDown['s'] && !keysDown['w']){
-//        setPos(mapToParent(0, speed/2));
-        foreach(QGraphicsItem* item, scene()->items()){
-            if(item != this)
-            item->setPos(item->pos() + mapToParent(0, -speed/2));
-        }
+        moveAllItems(-speed/2);
     }
 
     // ROTATE
@@ -208,27 +204,47 @@ void Player::update()
 {
     // The more energy the player has, the faster he moves
     speed = maxSpeed/3.0 + (energy * (2.0 * maxSpeed / maxEnergy / 3.0));
+
+    // Unless he is trying to move trough the water
+    if(inWater) speed = 1;
+    inWater = false;
+
     // Player is losing energy over time
     energy -= consumption;
     if(energy <= 0) energy = 0;
     if(energy >= maxEnergy) energy = maxEnergy;
-    qDebug() << pos() << energy << speed;
+//    qDebug() << pos() << energy << speed;
 
 
     // Check for collision with other items
     QList<QGraphicsItem*> collided = collidingItems();
     foreach(QGraphicsItem* item, collided){
-        Cheese *cheese = dynamic_cast<Cheese*>(item);
-        MouseTrap *trap = dynamic_cast<MouseTrap*>(item);
 
         // If the item is a cheese, eat it
-        if(cheese){
+        if(Cheese *cheese = dynamic_cast<Cheese*>(item)){
             energy += cheese->nutrition;
             cheese->deleteLater();
         }
         // If the item is a trap, die
-        else if(trap){
+        else if(MouseTrap *trap = dynamic_cast<MouseTrap*>(item)){
             deleteLater();
+        }
+
+        else if(WaterPool *pool = dynamic_cast<WaterPool*>(item)){
+            inWater = true;
+        }
+    }
+}
+
+void Player::moveAllItems(qreal d)
+{
+    foreach(QGraphicsItem* item, scene()->items()){
+        if(item != this){
+            QPointF newPos = item->pos() + mapToParent(0, d);
+            item->setPos(item->pos().x(), newPos.y());
+        }else{
+            QPointF newPos = mapToParent(0, -d);
+            setPos(newPos.x(), pos().y());
         }
     }
 }

@@ -28,21 +28,26 @@ private:
     qreal speed;    // How fast can the player move
     qreal angle;    // How much SHOULD the player rotate
 
-    bool jumping;   // Is the player jumping
     qreal energy;     // How many times can the player jump
+
 
     QColor color;   // Color of the mouse body
     QColor color2;  // Color of the mouse ears
+
+    bool jumping;   // Is the player jumping
+    bool inWater;   // Is the player in water
 
     static const qreal turningAngle; // How much CAN the player rotate
     static const int maxSpeed;       // Maximum movement speed
     static const int maxEnergy;      // Maximum total energy
     static const qreal consumption;  // How much energy is player losing over time
 
+
 private slots:
     void move();    // Slot that moves the player
     void update(); // Slot that updates the player
 
+    void moveAllItems(qreal d);
 };
 
 #endif // PLAYER_H

@@ -23,6 +23,11 @@ private:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseDoubleClickEvent(QMouseEvent* event) override;
 
+    QGraphicsItem *leftBound;
+    QGraphicsItem *rightBound;
+
+    qreal boundW;
+
 public slots:
     // Update the Game
     void update();

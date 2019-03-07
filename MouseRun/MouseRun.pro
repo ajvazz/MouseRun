@@ -30,14 +30,16 @@ SOURCES += \
     player.cpp \
     cheese.cpp \
     mousetrap.cpp \
-    cat.cpp
+    cat.cpp \
+    waterpool.cpp
 
 HEADERS += \
     game.h \
     player.h \
     cheese.h \
     mousetrap.h \
-    cat.h
+    cat.h \
+    waterpool.h
 
 FORMS +=
 

@@ -2,7 +2,9 @@
 #include <QPainter>
 
 
-MouseTrap::MouseTrap(){}
+MouseTrap::MouseTrap(){
+    setZValue(0);
+}
 
 QRectF MouseTrap::boundingRect() const
 {
