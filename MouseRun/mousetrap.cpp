@@ -8,7 +8,7 @@ MouseTrap::MouseTrap(){
 
 QRectF MouseTrap::boundingRect() const
 {
-    return QRectF(-20, -30, 40, 60);
+    return QRectF(-20, -30, 45, 75);
 }
 
 QPainterPath MouseTrap::shape() const
@@ -21,6 +21,5 @@ QPainterPath MouseTrap::shape() const
 void MouseTrap::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     painter->setRenderHint(QPainter::Antialiasing);
-    painter->setBrush(Qt::red);
-    painter->drawRect(boundingRect());
+    painter->drawPixmap(boundingRect().toRect(), QPixmap(":/img/mousetrap.png"));
 }

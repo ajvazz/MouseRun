@@ -1,6 +1,8 @@
 #include "waterpool.h"
 
 #include <QPainter>
+#include <QMovie>
+#include <QLabel>
 
 WaterPool::WaterPool(qreal h, qreal w): height(h), width(w)
 {
@@ -19,10 +21,10 @@ QPainterPath WaterPool::shape() const
     return path;
 }
 
-void WaterPool::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void WaterPool::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     painter->setRenderHint(QPainter::Antialiasing);
-    painter->setBrush(Qt::blue);
+    painter->setBrush(QBrush(QPixmap(":/img/water1.png")));
     painter->drawEllipse(boundingRect());
 }
 
@@ -38,9 +40,8 @@ QPainterPath WaterBound::shape() const
     return path;
 }
 
-void WaterBound::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void WaterBound::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     painter->setRenderHint(QPainter::Antialiasing);
-    painter->setBrush(Qt::blue);
-    painter->drawRect(boundingRect());
+    painter->drawTiledPixmap(boundingRect().toRect(), QPixmap(":/img/water1.png"), QPoint(0,0));
 }

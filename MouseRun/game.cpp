@@ -20,6 +20,9 @@ Game::Game()
     scene->setSceneRect(-300,-300,600,600);
     setScene(scene);
 
+    // Background image: TODO
+    setBackgroundBrush(QBrush(QColor(55,205,55)));
+
     // Turn off the scrollbars
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -58,14 +61,15 @@ void Game::start()
     show();
 }
 
+// Disable player deselection
 void Game::mousePressEvent(QMouseEvent *event)
 {
-
+    Q_UNUSED(event);
 }
-
+// Disable player deselection
 void Game::mouseDoubleClickEvent(QMouseEvent *event)
 {
-
+    Q_UNUSED(event);
 }
 
 void Game::update()

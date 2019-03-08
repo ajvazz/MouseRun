@@ -10,7 +10,7 @@ Cheese::Cheese(): nutrition(1 + QRandomGenerator::global()->bounded(maxNutrition
 
 QRectF Cheese::boundingRect() const
 {
-    return QRectF(-7, -7, 14, 14);
+    return QRectF(-13, -13, 26, 26);
 }
 
 QPainterPath Cheese::shape() const
@@ -23,7 +23,5 @@ QPainterPath Cheese::shape() const
 void Cheese::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     painter->setRenderHint(QPainter::Antialiasing);
-    painter->setBrush(Qt::yellow);
-    painter->drawRect(boundingRect());
-
+    painter->drawPixmap(boundingRect().toRect(), QPixmap(":/img/cheese.png"));
 }
