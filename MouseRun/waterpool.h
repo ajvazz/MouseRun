@@ -3,16 +3,17 @@
 
 #include <QGraphicsItem>
 
-class WaterPool : public QGraphicsItem
+class WaterPool : public QObject, public QGraphicsItem
 {
 public:
     WaterPool(qreal h, qreal w);
 
     //     Methods used for collision detection and drawing, inherited from QGraphicsItem
-        QRectF boundingRect() const override;
-        QPainterPath shape() const override;
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *,
-                   QWidget *) override;
+    QRectF boundingRect() const override;
+    QPainterPath shape() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *,
+               QWidget *) override;
+
 private:
 
     qreal height;

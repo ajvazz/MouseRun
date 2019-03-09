@@ -28,9 +28,9 @@ void WaterPool::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidg
     painter->drawEllipse(boundingRect());
 }
 
-WaterBound::WaterBound(qreal h, qreal w) : WaterPool (h, w)
+WaterBound::WaterBound(qreal h, qreal w): WaterPool (h, w)
 {
-
+    setZValue(0);
 }
 
 QPainterPath WaterBound::shape() const
