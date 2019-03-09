@@ -20,6 +20,11 @@ private:
     // Method that initializes the game
     void start();
 
+    // Methot that manages object spawning and removal
+    void spawnObjects();
+    void deleteObjects();
+
+    // Disable player deselection
     void mousePressEvent(QMouseEvent* event) override;
     void mouseDoubleClickEvent(QMouseEvent* event) override;
 
@@ -32,7 +37,6 @@ public slots:
     // Update the Game
     void update();
     // Spawn world objects
-    void spawnObjects();
 
 };
 
