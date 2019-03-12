@@ -31,7 +31,10 @@ SOURCES += \
     cheese.cpp \
     mousetrap.cpp \
     cat.cpp \
-    waterpool.cpp
+    waterpool.cpp \
+    connectiongene.cpp \
+    nodegene.cpp \
+    genome.cpp
 
 HEADERS += \
     game.h \
@@ -39,7 +42,10 @@ HEADERS += \
     cheese.h \
     mousetrap.h \
     cat.h \
-    waterpool.h
+    waterpool.h \
+    connectiongene.h \
+    nodegene.h \
+    genome.h
 
 FORMS +=
 

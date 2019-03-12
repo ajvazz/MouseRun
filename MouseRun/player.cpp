@@ -14,11 +14,16 @@ const int Player::maxEnergy = 10;
 const qreal Player::turningAngle = 0.5;
 const qreal Player::consumption = 0.01;
 
-Player::Player(): angle(0), energy(5),
+
+Player::Player(int numInputs, int numOutputs)
+    : genome(numInputs, numOutputs),
+    angle(0),
+    energy(5),
     // Pick random colors for ears and body
     color(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
     color2(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
-    jumping(false), inWater(false)
+    jumping(false),
+    inWater(false)
 {
     setZValue(1);
 

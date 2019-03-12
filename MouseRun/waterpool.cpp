@@ -23,6 +23,7 @@ QPainterPath WaterPool::shape() const
 
 void WaterPool::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
+    painter->setPen(Qt::NoPen);
     painter->setRenderHint(QPainter::Antialiasing);
     painter->setBrush(QBrush(QPixmap(":/img/water1.png")));
     painter->drawEllipse(boundingRect());

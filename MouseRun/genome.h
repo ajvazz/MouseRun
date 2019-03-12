@@ -1,11 +1,48 @@
 #ifndef GENOME_H
 #define GENOME_H
 
+#include <vector>
+#include <QObject>
 
-class Genome
+#include "nodegene.h"
+#include "connectiongene.h"
+
+class Genome : public QObject
 {
+    Q_OBJECT
+
 public:
-    Genome();
+    Genome(int input, int output);
+
+    std::vector<double> feedForward(std::vector<double> inputValues);
+
+    void mutate();
+
+    void addNode();
+
+    void addConnection();
+
+    int newNodeId;
+    int newConnectionId;
+
+    Genome* crossover(const Genome &other);
+
+    void connectNodes();
+
+
+signals:
+    void connectionIdNeeded(Genome*, int fromNodeId, int toNodeId);
+
+    void nodeIdNeeded(Genome*, int connectionId);
+
+
+private:
+    std::vector<NodeGene> nodes;
+    std::vector<ConnectionGene> connections;
+    int numInputs;
+    int numOutputs;
+    int layers;
+    int biasNodeId;
 };
 
 #endif // GENOME_H

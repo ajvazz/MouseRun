@@ -3,12 +3,15 @@
 
 #include <QObject>
 #include <QGraphicsItem>
+#include <vector>
+
+#include "genome.h"
 
 class Player : public QObject, public QGraphicsItem
 {
     Q_OBJECT
 public:
-    Player();
+    Player(int numInputs, int numOutputs);
 
     // Methods used for collision detection and drawing, inherited from QGraphicsItem
     QRectF boundingRect() const override;
@@ -21,7 +24,13 @@ public:
     void keyReleaseEvent(QKeyEvent * event) override;
 
 
+
+    // player makes decision based on what neural network from genome tells him
+    Genome genome;
+    std::vector<double> genomeInput;
+    std::vector<double> genomeOutput;
 private:
+
     // TODO enum
     QMap<char,bool> keysDown;
 
