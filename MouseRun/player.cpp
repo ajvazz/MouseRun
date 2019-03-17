@@ -2,6 +2,7 @@
 #include "cheese.h"
 #include "mousetrap.h"
 #include "waterpool.h"
+#include "cat.h"
 #include <QPainter>
 #include <QRandomGenerator>
 #include <QGraphicsScene>
@@ -237,6 +238,10 @@ void Player::update()
 
         else if(WaterPool *pool = dynamic_cast<WaterPool*>(item)){
             inWater = true;
+        }
+        else if(Cat *cat = dynamic_cast<Cat*>(item)){
+            deleteLater();
+//            qDebug() << "DEAD";
         }
     }
 }

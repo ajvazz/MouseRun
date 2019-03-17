@@ -43,6 +43,11 @@ void Game::start()
     player = new Player(numInputs, numOutputs);
     scene->addItem(player);
 
+    // Spawn cat
+    cat = new Cat();
+    cat->setPos(0, 1000);
+    scene->addItem(cat);
+
     // create population of players
 //    for(int i = 0; i < populationSize; i++) {
 //        Player *player = new Player(numInputs, numOutputs);
@@ -102,6 +107,12 @@ void Game::update()
 
     spawnObjects();
     deleteObjects();
+
+    // Move the cat
+    QPointF v = player->pos() - cat->pos();
+    qreal d = sqrt(v.x() * v.x() + v.y() * v.y());
+    QPointF dir = v / d;
+    cat->setPos(cat->pos() + dir * cat->speed);
 
     // Moving background picture
     // Ovo je posao za Satanu ^^^^

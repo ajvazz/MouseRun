@@ -4,6 +4,7 @@
 #include <QGraphicsView>
 
 #include "player.h"
+#include "cat.h"
 
 class Game : public QGraphicsView
 {
@@ -26,6 +27,7 @@ private:
 
     QGraphicsScene* scene;
     Player* player;
+    Cat* cat;
 
     // population of genetic algorithm
     std::vector<Player*> population;

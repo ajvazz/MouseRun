@@ -4,5 +4,6 @@
         <file>img/mousetrap.png</file>
         <file>img/water1.png</file>
         <file>img/grass.jpg</file>
+        <file>img/cat.png</file>
     </qresource>
 </RCC>

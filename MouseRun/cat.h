@@ -3,10 +3,18 @@
 
 #include <QGraphicsItem>
 
-class Cat : public QGraphicsItem
+class Cat : public QObject, public QGraphicsItem
 {
 public:
     Cat();
+
+    //     Methods used for collision detection and drawing, inherited from QGraphicsItem
+        QRectF boundingRect() const override;
+        QPainterPath shape() const override;
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                   QWidget *widget) override;
+
+        qreal speed;
 };
 
 #endif // CAT_H
