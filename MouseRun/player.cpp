@@ -17,7 +17,7 @@ const qreal Player::consumption = 0.01;
 
 
 Player::Player(int numInputs, int numOutputs)
-    : genome(numInputs, numOutputs),
+    : genome(numInputs, numOutputs), fitness(0),
     angle(0),
     energy(5),
     // Pick random colors for ears and body

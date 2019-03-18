@@ -23,12 +23,12 @@ public:
     void keyPressEvent(QKeyEvent * event) override;
     void keyReleaseEvent(QKeyEvent * event) override;
 
-
-
     // player makes decision based on what neural network from genome tells him
     Genome genome;
     std::vector<double> genomeInput;
     std::vector<double> genomeOutput;
+    double fitness;
+
 private:
 
     // TODO enum

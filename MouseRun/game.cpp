@@ -114,15 +114,6 @@ void Game::update()
     QPointF dir = v / d;
     cat->setPos(cat->pos() + dir * cat->speed);
 
-    // Moving background picture
-    // Ovo je posao za Satanu ^^^^
-
-//    if (leftBound->pos().y() > 200) {
-////        setBackgroundBrush(QBrush(QColor(55,205,55)));
-//        setBackgroundBrush(QBrush(QPixmap(":/img/grass.jpg")));
-//        // drawBackground
-//    }
-
     // Water bound is moving with player
     // If you don't know why 200, enter scene height (=600) or similar, see what happens
     if (leftBound->pos().y() > 200) {
@@ -135,7 +126,7 @@ void Game::update()
         rightBound->setPos(rightBound->pos().x(), 0);
     }
 
-    qDebug() << scene->items().size();
+//    qDebug() << scene->items().size();
 }
 
 
