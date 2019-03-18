@@ -29,6 +29,8 @@ public:
 
     void connectNodes();
 
+    // This is used in Species class, when calculating excess and disjoint genes
+    std::vector<ConnectionGene> connections;
 
 signals:
     void connectionIdNeeded(Genome*, int fromNodeId, int toNodeId);
@@ -38,7 +40,7 @@ signals:
 
 private:
     std::vector<NodeGene> nodes;
-    std::vector<ConnectionGene> connections;
+    // std::vector<ConnectionGene> connections;
     int numInputs;
     int numOutputs;
     int layers;
