@@ -34,7 +34,8 @@ SOURCES += \
     waterpool.cpp \
     connectiongene.cpp \
     nodegene.cpp \
-    genome.cpp
+    genome.cpp \
+    species.cpp
 
 HEADERS += \
     game.h \
@@ -45,7 +46,8 @@ HEADERS += \
     waterpool.h \
     connectiongene.h \
     nodegene.h \
-    genome.h
+    genome.h \
+    species.h
 
 FORMS +=
 
