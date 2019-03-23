@@ -16,15 +16,15 @@ const qreal Player::turningAngle = 0.5;
 const qreal Player::consumption = 0.01;
 
 
-Player::Player(int numInputs, int numOutputs)
-    : genome(numInputs, numOutputs), fitness(0),
-    angle(0),
-    energy(5),
-    // Pick random colors for ears and body
-    color(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
-    color2(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
-    jumping(false),
-    inWater(false)
+Player::Player(Genome* genome)
+    : genome{genome},
+      angle(0),
+      energy(5),
+      // Pick random colors for ears and body
+      color(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
+      color2(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
+      jumping(false),
+      inWater(false)
 {
     setZValue(1);
 
@@ -232,14 +232,14 @@ void Player::update()
             cheese->deleteLater();
         }
         // If the item is a trap, die
-        else if(MouseTrap *trap = dynamic_cast<MouseTrap*>(item)){
+        else if(dynamic_cast<MouseTrap*>(item)){
             deleteLater();
         }
 
-        else if(WaterPool *pool = dynamic_cast<WaterPool*>(item)){
+        else if(dynamic_cast<WaterPool*>(item)){
             inWater = true;
         }
-        else if(Cat *cat = dynamic_cast<Cat*>(item)){
+        else if(dynamic_cast<Cat*>(item)){
             deleteLater();
 //            qDebug() << "DEAD";
         }

@@ -19,7 +19,7 @@ QPainterPath Cat::shape() const
     return path;
 }
 
-void Cat::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void Cat::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     painter->setRenderHint(QPainter::Antialiasing);
     painter->drawPixmap(boundingRect().toRect(), QPixmap(":/img/cat.png"));

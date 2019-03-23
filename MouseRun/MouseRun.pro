@@ -35,7 +35,8 @@ SOURCES += \
     connectiongene.cpp \
     nodegene.cpp \
     genome.cpp \
-    species.cpp
+    species.cpp \
+    controller.cpp
 
 HEADERS += \
     game.h \
@@ -47,7 +48,8 @@ HEADERS += \
     connectiongene.h \
     nodegene.h \
     genome.h \
-    species.h
+    species.h \
+    controller.h
 
 FORMS +=
 

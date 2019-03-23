@@ -22,29 +22,28 @@ public:
 
     void addConnection();
 
-    int newNodeId;
-    int newConnectionId;
+    Genome* crossover(Genome *other);
 
-    Genome* crossover(const Genome &other);
+    Genome* clone();
 
     void connectNodes();
 
-    // This is used in Species class, when calculating excess and disjoint genes
+    int newNodeId;
+    int newConnectionId;
+
+    std::vector<NodeGene> nodes;
     std::vector<ConnectionGene> connections;
+    double fitness;
+    int numInputs;
+    int numOutputs;
+    int layers;
+    int biasNodeId;
 
 signals:
     void connectionIdNeeded(Genome*, int fromNodeId, int toNodeId);
 
     void nodeIdNeeded(Genome*, int connectionId);
 
-
-private:
-    std::vector<NodeGene> nodes;
-    // std::vector<ConnectionGene> connections;
-    int numInputs;
-    int numOutputs;
-    int layers;
-    int biasNodeId;
 };
 
 #endif // GENOME_H

@@ -11,7 +11,7 @@ class Player : public QObject, public QGraphicsItem
 {
     Q_OBJECT
 public:
-    Player(int numInputs, int numOutputs);
+    Player(Genome* genome);
 
     // Methods used for collision detection and drawing, inherited from QGraphicsItem
     QRectF boundingRect() const override;
@@ -24,10 +24,9 @@ public:
     void keyReleaseEvent(QKeyEvent * event) override;
 
     // player makes decision based on what neural network from genome tells him
-    Genome genome;
+    Genome *genome;
     std::vector<double> genomeInput;
     std::vector<double> genomeOutput;
-    double fitness;
 
 private:
 
@@ -39,7 +38,6 @@ private:
 
     qreal energy;     // How many times can the player jump
 
-
     QColor color;   // Color of the mouse body
     QColor color2;  // Color of the mouse ears
 
@@ -50,7 +48,6 @@ private:
     static const int maxSpeed;       // Maximum movement speed
     static const int maxEnergy;      // Maximum total energy
     static const qreal consumption;  // How much energy is player losing over time
-
 
 private slots:
     void move();    // Slot that moves the player

@@ -1,19 +1,14 @@
 #include "species.h"
 #include <random>
 
-Species::Species(Player *p)
+Species::Species(Genome *p)
     : bestFitness{0}, averageFitness{0}, stagnantCoeff{0}, allowedReproduction{true},
       excessCoeff{1}, weightDiffCoeff{0.4}, compatibilityThreshold{3}
 {
-    players.push_back(p);
-    bestFitness = p->fitness;       // Best fitness, because it is the only player
-    representGenome = &p->genome;
-    championPlayer = p;
-}
-
-void Species::addToSpecies(Player *p)
-{
-    players.push_back(p);
+    genomes.push_back(p);
+    bestFitness = p->fitness;       // Best fitness, because it is the only Genome
+    representGenome = p;
+    bestGenome = p;
 }
 
 bool Species::isSameSpecies(const Genome &genome)
@@ -80,15 +75,15 @@ bool Species::isSameSpecies(const Genome &genome)
 void Species::sortSpeciesByFitness()
 {
     // NOTE: may have an error, had nothing to test this on
-    std::sort(players.begin(), players.end(), [] (const auto &lhs, const auto &rhs) {
+    std::sort(genomes.begin(), genomes.end(), [] (const auto &lhs, const auto &rhs) {
         return lhs->fitness > rhs->fitness;     // Or '<' idk
     });
 
     // Checking if we should penalize the species if the fittest is not so fit
-    if (players[0]->fitness > bestFitness) {        // OK - generation improved
+    if (genomes[0]->fitness > bestFitness) {        // OK - generation improved
         stagnantCoeff = 0;
-        bestFitness = players[0]->fitness;
-        representGenome = &players[0]->genome;
+        bestFitness = genomes[0]->fitness;
+        representGenome = genomes[0];
 
     } else {
         // stagnantCoeff++;
@@ -100,25 +95,38 @@ void Species::sortSpeciesByFitness()
 
 
 // Due to many errors, left unimplemented
-Player* Species::createOffspring()
+Genome* Species::createOffspring()
 {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(0, 1);
     double r = dist(gen);
+    Genome* offspring = nullptr;
 
-    // TODO
+    if (r < 0.25) {
+        offspring = selectParent()->clone();
+    } else {
 
-    return nullptr;
+        Genome *p1 = selectParent();
+        Genome *p2 = selectParent();
+
+        if (p1->fitness > p2->fitness) {
+            offspring = p1->crossover(p2);
+        } else {
+            offspring = p2->crossover(p1);
+        }
+    }
+    offspring->mutate();
+
+    return offspring;
 }
 
-Player* Species::playerSelection()
+Genome* Species::selectParent()
 {
-    // Finding a player using roulette selection
-    // Maybe we could add tournament selection ?
+    // Finding a Genome using roulette selection
 
-    double totalSpeciesFitness = std::accumulate(players.cbegin(), players.cend(), 0,
-        [](double acc, Player *p){    // Could be an error
+    double totalSpeciesFitness = std::accumulate(genomes.cbegin(), genomes.cend(), 0,
+        [](double acc, Genome *p){    // Could be an error
             return p->fitness + acc;
     });
 
@@ -128,40 +136,42 @@ Player* Species::playerSelection()
     double selectedValue = dist(gen);
 
     double fitnessSum = 0;
-    for (unsigned i=0; i < players.size(); i++) {
-        fitnessSum += players[i]->fitness;
-        if (fitnessSum > selectedValue)
-            return players[i];
+    for (unsigned i=0; i < genomes.size(); i++) {
+        fitnessSum += genomes[i]->fitness;
+        if (fitnessSum >= selectedValue)
+            return genomes[i];
     }
 
-    // This will never execute, but return value must exist. Pick a random player
-    std::uniform_real_distribution<> dist1(0, players.size()-1);
-    return players[static_cast<size_t>(dist1(gen))];
+    // This will never execute, but return value must exist. Pick a random Genome
+    std::uniform_real_distribution<> dist1(0, genomes.size()-1);
+    return genomes[static_cast<size_t>(dist1(gen))];
 }
 
 void Species::explicitFitnessSharing()
 {
-    for (unsigned i=0; i < players.size(); i++) {
-        players[i]->fitness /= players.size();
+    for (unsigned i=0; i < genomes.size(); i++) {
+        genomes[i]->fitness /= genomes.size();
     }
 }
 
 void Species::decimateSpecies()
 {
-    if (players.size() <= 2)
+    if (genomes.size() <= 2)
         return;
 
+    // TODO add remove
+
     // Remove the second (worse) half of the species
-    players.erase(players.cbegin() + players.size()/2, players.cend());
+    genomes.erase(genomes.cbegin() + genomes.size()/2, genomes.cend());
 }
 
 // Calculate average fitness in the species (setter, not getter)
 void Species::calcAverageFitness()
 {
-    double sum = std::accumulate(players.cbegin(), players.cend(), 0,
-        [](double acc, Player *p){    // Could be an error
+    double sum = std::accumulate(genomes.cbegin(), genomes.cend(), 0,
+        [](double acc, Genome *p){    // Could be an error
             return p->fitness + acc;
     });
 
-    averageFitness = sum/players.size();
+    averageFitness = sum/genomes.size();
 }

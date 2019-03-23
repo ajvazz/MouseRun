@@ -163,7 +163,7 @@ void Genome::addConnection()
     fromNode.outputConnections.push_back(connection);
 }
 
-Genome* Genome::crossover(const Genome &other)
+Genome* Genome::crossover(Genome *other)
 {
     Genome* child = new Genome(numInputs, numOutputs);
     child->layers = layers;
@@ -173,8 +173,8 @@ Genome* Genome::crossover(const Genome &other)
 
     for(auto&& c1 : connections) {
         int index = -1;
-        for(int i = 0; i < other.connections.size(); i++) {
-            if(c1.innovationNumber == other.connections[i].innovationNumber) {
+        for(int i = 0; i < other->connections.size(); i++) {
+            if(c1.innovationNumber == other->connections[i].innovationNumber) {
                 index = i;
             }
         }
@@ -189,7 +189,7 @@ Genome* Genome::crossover(const Genome &other)
             bool enable = true;
 
             // if connection is disabled in both parents, there is 75% chance that it is disabled in the child
-            if(!c1.enabled || !other.connections[index].enabled) {
+            if(!c1.enabled || !other->connections[index].enabled) {
                 if(dist(gen) < 0.75) {
                     enable = false;
                 }
@@ -200,8 +200,8 @@ Genome* Genome::crossover(const Genome &other)
                 childConnection.enabled = enable;
                 child->connections.push_back(childConnection);
             } else {
-                ConnectionGene childConnection(other.connections[index].inNode, other.connections[index].outNode,
-                                               other.connections[index].weight, other.connections[index].innovationNumber);
+                ConnectionGene childConnection(other->connections[index].inNode, other->connections[index].outNode,
+                                               other->connections[index].weight, other->connections[index].innovationNumber);
                 childConnection.enabled = enable;
                 child->connections.push_back(childConnection);
             }
@@ -218,6 +218,21 @@ Genome* Genome::crossover(const Genome &other)
     child->connectNodes();
 
     return child;
+}
+
+Genome *Genome::clone()
+{
+    Genome* genome = new Genome(numInputs, numOutputs);
+
+    genome->nodes = nodes;
+    genome->layers = layers;
+    genome->fitness = fitness;
+    genome->newNodeId = newNodeId;
+    genome->biasNodeId = biasNodeId;
+    genome->connections = connections;
+    genome->newConnectionId = newConnectionId;
+
+    return genome;
 }
 
 void Genome::connectNodes()

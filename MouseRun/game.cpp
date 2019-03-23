@@ -7,14 +7,8 @@
 #include <QDebug>
 #include <QRandomGenerator>
 
-const int populationSize = 50;
-// number of inputs and outputs for the genome (nn)
-const int numInputs = 4;
-const int numOutputs = 2;
 
-Game::Game()
-    : nextConnId{0},
-      nextNodeId{numInputs + numOutputs + 1}
+Game::Game(Genome* genome)
 {
     // Create the scene
     int width = 600;
@@ -34,32 +28,19 @@ Game::Game()
     setBackgroundBrush(QBrush(QColor(55,205,55)));
 
     // Start the game
-    start();
+    start(genome);
 }
 
-void Game::start()
+void Game::start(Genome* genome)
 {
     // Spawn player
-    player = new Player(numInputs, numOutputs);
+    player = new Player(genome);
     scene->addItem(player);
 
     // Spawn cat
     cat = new Cat();
     cat->setPos(0, 1000);
     scene->addItem(cat);
-
-    // create population of players
-//    for(int i = 0; i < populationSize; i++) {
-//        Player *player = new Player(numInputs, numOutputs);
-//        population.push_back(player);
-//        scene->addItem(player);
-//    }
-//    for(auto&& p : population) {
-//        connect(&p->genome, SIGNAL(nodeIdNeeded(Genome*, int)),
-//                this, SLOT(getNodeId(Genome*, int)),
-//                Qt::DirectConnection);
-//    }
-
 
     // Update the Game every 15 ms
     static QTimer updateTimer;
@@ -91,6 +72,7 @@ void Game::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
 }
+
 // Disable player deselection
 void Game::mouseDoubleClickEvent(QMouseEvent *event)
 {
@@ -172,23 +154,4 @@ void Game::deleteObjects()
             }
         }
     }
-}
-
-void Game::getNodeId(Genome *genome, int connectionId)
-{
-    auto search = mapNode.find(connectionId);
-    if(search == mapNode.end()) {
-        mapNode[connectionId] = nextNodeId++;
-    }
-    genome->newNodeId = mapNode[connectionId];
-}
-
-void Game::getConnId(Genome *genome, int fromNodeId, int toNodeId)
-{
-    auto key = std::make_pair(fromNodeId, toNodeId);
-    auto search = mapConn.find(key);
-    if(search == mapConn.end()) {
-        mapConn[key] = nextConnId++;
-    }
-    genome->newConnectionId = mapConn[key];
 }

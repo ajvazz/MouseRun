@@ -3,7 +3,6 @@
 
 class NodeGene;
 
-
 class ConnectionGene
 {
 public:

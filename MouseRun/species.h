@@ -6,28 +6,26 @@
 class Species
 {
 public:
-    Species(Player *p);
+    Species(Genome *g);
 
     bool isSameSpecies(const Genome &gen);  // Is current genome in the same species as 'gen'
 
     void calcAverageFitness();              // Average fitness (setter, not getter)
 
-    void addToSpecies(Player *p);
-
     void sortSpeciesByFitness();
 
-    Player* playerSelection();              // Tournament selection of a player
+    Genome* selectParent();              // Select a genome from this species
 
     // TODO
-    Player* createOffspring();
+    Genome* createOffspring();
 
     void decimateSpecies();                 // Get rid of the unfit genomes in this species
 
     void explicitFitnessSharing();          // Stops species from becoming too big
 
 private:
-    std::vector<Player*> players;
-    Player *championPlayer;     // necessary ?
+    std::vector<Genome*> genomes;
+    Genome *bestGenome;     // necessary ?
 
     Genome *representGenome;    // pointer ?
 
