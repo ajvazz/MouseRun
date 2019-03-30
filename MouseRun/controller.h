@@ -2,6 +2,8 @@
 #define CONTROLLER_H
 
 #include <QObject>
+
+#include "species.h"
 #include "genome.h"
 
 class Controller : public QObject
@@ -18,7 +20,9 @@ public slots:
 
 private:
     // population of genetic algorithm
-    std::vector<Genome*> population;
+    std::vector<Genome> population;
+
+    std::vector<Species> species;
 
     // current generation
     int generationNum;

@@ -1,5 +1,6 @@
 #include <QApplication>
 
+#include "game.h"
 #include "controller.h"
 
 int main(int argc, char *argv[])

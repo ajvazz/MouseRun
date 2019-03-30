@@ -12,27 +12,29 @@ public:
 
     void calcAverageFitness();              // Average fitness (setter, not getter)
 
-    void sortSpeciesByFitness();
+    void sortGenomesByFitness();
+
+    void addToSpecies(Genome* genome);
 
     Genome* selectParent();              // Select a genome from this species
 
-    // TODO
     Genome* createOffspring();
 
     void decimateSpecies();                 // Get rid of the unfit genomes in this species
 
     void explicitFitnessSharing();          // Stops species from becoming too big
 
-private:
-    std::vector<Genome*> genomes;
-    Genome *bestGenome;     // necessary ?
+    bool allowedReproduction;           // If the staleness is high, species should not reproduce
+
 
     Genome *representGenome;    // pointer ?
 
     double bestFitness;
     double averageFitness;
-    unsigned stagnantCoeff;             // How many generations without an improvement
-    bool allowedReproduction;           // If the staleness is high, species should not reproduce
+    unsigned stagnantCoeff;
+private:
+    std::vector<Genome*> genomes;
+           // How many generations without an improvement
 
     // Parameters for compatibility function
     double excessCoeff;

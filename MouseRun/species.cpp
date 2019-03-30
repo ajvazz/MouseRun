@@ -8,7 +8,6 @@ Species::Species(Genome *p)
     genomes.push_back(p);
     bestFitness = p->fitness;       // Best fitness, because it is the only Genome
     representGenome = p;
-    bestGenome = p;
 }
 
 bool Species::isSameSpecies(const Genome &genome)
@@ -72,7 +71,7 @@ bool Species::isSameSpecies(const Genome &genome)
     return (compatibilityThreshold > compatibilityDistance);
 }
 
-void Species::sortSpeciesByFitness()
+void Species::sortGenomesByFitness()
 {
     // NOTE: may have an error, had nothing to test this on
     std::sort(genomes.begin(), genomes.end(), [] (const auto &lhs, const auto &rhs) {
@@ -91,6 +90,11 @@ void Species::sortSpeciesByFitness()
             allowedReproduction = false;
         }
     }
+}
+
+void Species::addToSpecies(Genome *genome)
+{
+    genomes.push_back(genome);
 }
 
 
@@ -158,8 +162,6 @@ void Species::decimateSpecies()
 {
     if (genomes.size() <= 2)
         return;
-
-    // TODO add remove
 
     // Remove the second (worse) half of the species
     genomes.erase(genomes.cbegin() + genomes.size()/2, genomes.cend());
