@@ -11,21 +11,25 @@ class Game : public QGraphicsView
     Q_OBJECT
 
 public:
-    Game(Genome* genome);
+    Game(Genome* genome, int i);
 
+signals:
+    void died(int i);
 
 public slots:
     // Update the Game
     void update();
 
 private:
+    int i;
 
     QGraphicsScene* scene;
     Player* player;
+    Genome* genome;
     Cat* cat;
 
     // Method that initializes the game
-    void start(Genome* genome);
+    void start();
 
     // Method that manages object spawning and removal
     void spawnObjects();

@@ -2,23 +2,26 @@
 #include "game.h"
 #include <cmath>
 #include <QTime>
+#include <QDebug>
 
 const int populationSize = 50;
-const int numOfGenerations = 20;
+
 // number of inputs and outputs for the genome (nn)
 const int numInputs = 4;
-const int numOutputs = 2;
+const int numOutputs = 5;
 
 Controller::Controller()
     : generationNum{0},
       nextConnId{0},
-      nextNodeId{numInputs + numOutputs + 1}
+      nextNodeId{numInputs + numOutputs + 1},
+      numGenomesDone{0},
+      numOfGenerations{20}
 {
     // create initial population
     for(int i = 0; i < populationSize; i++) {
 
         Genome *genome = new Genome(numInputs, numOutputs);
-        population.push_back(*genome);
+        population.push_back(genome);
 
         connect(genome, SIGNAL(nodeIdNeeded(Genome*, int)),
                 this, SLOT(getNodeId(Genome*, int)),
@@ -29,9 +32,15 @@ Controller::Controller()
                 Qt::DirectConnection);
     }
 
-    for(int i = 0; i < numOfGenerations; i++) {
-        evolve();
-    }
+
+    time.start();
+//    for(int i = 0; i < numOfGenerations; i++) {
+//        runGeneration();
+//        time.restart();
+//        numGenomesDone = 0;
+//    }
+
+    runGeneration();
 }
 
 
@@ -54,35 +63,51 @@ void Controller::getConnId(Genome *genome, int fromNodeId, int toNodeId)
     genome->newConnectionId = mapConn[key];
 }
 
+void Controller::calculateFitness(int i)
+{
+    population[i]->fitness = time.elapsed();
+    qDebug() << i << population[i]->fitness;
+    numGenomesDone++;
+    if(numGenomesDone == populationSize) {
+        evolve();
+    }
+}
+
+void Controller::runGeneration()
+{
+    qDebug() << "runGeneration";
+    // Calculate fitness as the time a player stays alive
+    for(size_t i = 0; i < population.size(); i++) {
+
+        Game *game = new Game(population[i], i);
+        connect(game, SIGNAL(died(int)),
+                this, SLOT(calculateFitness(int)));
+    }
+}
+
 void Controller::evolve()
 {
-    // Calculate fitness as the time a player stays alive
-    for(auto &genome : population) {
+    qDebug() << "evolve";
 
-        QTime time;
-        time.start();
-        Game game(&genome);
-        genome.fitness = time.elapsed();
-    }
 
     // Speciate
     for(auto & genome : population){
         bool newSpecies = true;
         for(auto & s : species) {
-            if(s.isSameSpecies(genome)) {
-                s.addToSpecies(&genome);
+            if(s.isSameSpecies(*genome)) {
+                s.addToSpecies(genome);
                 newSpecies = false;
                 break;
             }
         }
 
         if (newSpecies) {
-            species.push_back(Species(&genome));
+            species.push_back(Species(genome));
         }
     }
 
     // Create new population
-    std::vector<Genome> newPopulation;
+    std::vector<Genome*> newPopulation;
 
     double averageFitnessSum = 0;
 
@@ -105,18 +130,18 @@ void Controller::evolve()
             // maybe delete this species
         }
 
-        newPopulation.push_back(*species[i].representGenome->clone());
+        newPopulation.push_back(species[i].representGenome->clone());
 
         int numOffspring = std::floor(species[i].averageFitness / averageFitnessSum * populationSize) - 1;
 
         for(int i = 0; i < numOffspring; i++) {
-            newPopulation.push_back(*species[i].createOffspring());
+            newPopulation.push_back(species[i].createOffspring());
         }
     }
 
     while(newPopulation.size() < populationSize) {
 
-        newPopulation.push_back(*species[0].createOffspring());
+        newPopulation.push_back(species[0].createOffspring());
     }
 
     // TODO interspecies breeding (0.001 prob)
@@ -124,5 +149,11 @@ void Controller::evolve()
     population.clear();
     for(size_t i = 0; i < populationSize; i++) {
         population.push_back(newPopulation[i]);
+    }
+
+    if(--numOfGenerations > 0) {
+        time.restart();
+        numGenomesDone = 0;
+        runGeneration();
     }
 }

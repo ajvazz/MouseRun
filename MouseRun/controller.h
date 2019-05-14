@@ -1,10 +1,11 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include <QObject>
-
 #include "species.h"
 #include "genome.h"
+
+#include <QObject>
+#include <QTime>
 
 class Controller : public QObject
 {
@@ -18,9 +19,11 @@ public slots:
 
     void getConnId(Genome* genome, int fromNodeId, int toNodeId);
 
+    void calculateFitness(int i);
+
 private:
     // population of genetic algorithm
-    std::vector<Genome> population;
+    std::vector<Genome*> population;
 
     std::vector<Species> species;
 
@@ -42,7 +45,15 @@ private:
     // if given key doesn't exist in the mapNode, nextNodeId is incremented and set as value in the map
     int nextNodeId;
 
+    QTime time;
+
+    int numGenomesDone;
+
+    int numOfGenerations;
+
     void evolve();
+
+    void runGeneration();
 };
 
 #endif // CONTROLLER_H

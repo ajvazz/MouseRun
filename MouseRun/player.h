@@ -11,7 +11,7 @@ class Player : public QObject, public QGraphicsItem
 {
     Q_OBJECT
 public:
-    Player(Genome* genome);
+    Player();
 
     // Methods used for collision detection and drawing, inherited from QGraphicsItem
     QRectF boundingRect() const override;
@@ -20,23 +20,22 @@ public:
                QWidget *widget) override;
 
     // Input methods
-    void keyPressEvent(QKeyEvent * event) override;
-    void keyReleaseEvent(QKeyEvent * event) override;
+//    void keyPressEvent(QKeyEvent * event) override;
+//    void keyReleaseEvent(QKeyEvent * event) override;
 
-    // player makes decision based on what neural network from genome tells him
-    Genome *genome;
-    std::vector<double> genomeInput;
-    std::vector<double> genomeOutput;
+    bool alive;
+
+    qreal energy;     // How many times can the player jump
+
+    qreal angle;    // How much SHOULD the player rotate
+
+    QMap<char, bool> keysDown;
 
 private:
 
     // TODO enum
-    QMap<char,bool> keysDown;
 
     qreal speed;    // How fast can the player move
-    qreal angle;    // How much SHOULD the player rotate
-
-    qreal energy;     // How many times can the player jump
 
     QColor color;   // Color of the mouse body
     QColor color2;  // Color of the mouse ears

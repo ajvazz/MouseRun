@@ -4,7 +4,9 @@
 #include <QMovie>
 #include <QLabel>
 
-WaterPool::WaterPool(qreal h, qreal w): height(h), width(w)
+WaterPool::WaterPool(qreal h, qreal w)
+    : height(h),
+      width(w)
 {
     setZValue(-1);
 }

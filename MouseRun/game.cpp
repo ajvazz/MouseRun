@@ -8,7 +8,9 @@
 #include <QRandomGenerator>
 
 
-Game::Game(Genome* genome)
+Game::Game(Genome* genome, int i)
+    : i{i},
+      genome{genome}
 {
     // Create the scene
     int width = 600;
@@ -28,13 +30,13 @@ Game::Game(Genome* genome)
     setBackgroundBrush(QBrush(QColor(55,205,55)));
 
     // Start the game
-    start(genome);
+    start();
 }
 
-void Game::start(Genome* genome)
+void Game::start()
 {
     // Spawn player
-    player = new Player(genome);
+    player = new Player();
     scene->addItem(player);
 
     // Spawn cat
@@ -81,10 +83,12 @@ void Game::mouseDoubleClickEvent(QMouseEvent *event)
 
 void Game::update()
 {
-    if (!player){
+    if (!player->alive){
         // The player died
-        // restart()
-        exit(0);
+        emit died(i);
+        delete player;
+        deleteLater();
+        return;
     }
 
     spawnObjects();
@@ -108,7 +112,21 @@ void Game::update()
         rightBound->setPos(rightBound->pos().x(), 0);
     }
 
-//    qDebug() << scene->items().size();
+    // feed forward...
+    std::vector<double> inputs;
+    inputs.push_back(player->pos().x());
+    inputs.push_back(player->energy);
+    inputs.push_back(player->angle);
+    inputs.push_back(cat->pos().y());
+
+//    player->keysDown['w'] = true;
+
+    std::vector<double> outputs = genome->feedForward(inputs);
+    player->keysDown['w'] = outputs[0] >= 0.5;
+    player->keysDown['a'] = outputs[1] >= 0.5;
+    player->keysDown['s'] = outputs[2] >= 0.5;
+    player->keysDown['d'] = outputs[3] >= 0.5;
+    player->keysDown['j'] = outputs[4] >= 0.5;
 }
 
 

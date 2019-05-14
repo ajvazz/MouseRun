@@ -16,16 +16,22 @@ const qreal Player::turningAngle = 0.5;
 const qreal Player::consumption = 0.01;
 
 
-Player::Player(Genome* genome)
-    : genome{genome},
-      angle(0),
+Player::Player()
+    : angle(0),
       energy(5),
       // Pick random colors for ears and body
       color(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
       color2(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
       jumping(false),
-      inWater(false)
+      inWater(false),
+      alive{true}
 {
+    keysDown['w'] = false;
+    keysDown['a'] = false;
+    keysDown['s'] = false;
+    keysDown['d'] = false;
+    keysDown['j'] = false;
+
     setZValue(1);
 
     setPos(0, 0);
@@ -95,7 +101,7 @@ void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget 
     painter->setBrush(Qt::NoBrush);
     painter->drawPath(path);
 }
-
+/*
 void Player::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == Qt::Key_A || event->key() == Qt::Key_Left){
@@ -113,6 +119,7 @@ void Player::keyPressEvent(QKeyEvent *event)
     if(event->key() == Qt::Key_Space){
         keysDown['j'] = true;
     }
+    // cheat
     if(event->key() == Qt::Key_E){
         energy++;
     }
@@ -137,7 +144,7 @@ void Player::keyReleaseEvent(QKeyEvent *event)
     }
 }
 
-
+*/
 void Player::move()
 {
 
@@ -233,14 +240,14 @@ void Player::update()
         }
         // If the item is a trap, die
         else if(dynamic_cast<MouseTrap*>(item)){
-            deleteLater();
+            alive = false;
         }
 
         else if(dynamic_cast<WaterPool*>(item)){
             inWater = true;
         }
         else if(dynamic_cast<Cat*>(item)){
-            deleteLater();
+            alive = false;
 //            qDebug() << "DEAD";
         }
     }

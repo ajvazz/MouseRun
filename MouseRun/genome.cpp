@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <random>
+#include <QDebug>
 
 Genome::Genome(int inputs, int outputs)
     : numInputs{inputs}, numOutputs{outputs}
@@ -45,7 +46,7 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
     // get output values of output nodes
     std::vector<double> result(numOutputs);
     for(int i = numInputs; i < numInputs + numOutputs; i++) {
-        result[i] = nodes[i].outputValue;
+        result[i - numInputs] = nodes[i].outputValue;
     }
 
     // reset inputSum
