@@ -25,7 +25,7 @@ private:
     // population of genetic algorithm
     std::vector<Genome*> population;
 
-    std::vector<Species> species;
+    std::vector<Species*> species;
 
     // current generation
     int generationNum;

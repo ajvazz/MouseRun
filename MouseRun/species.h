@@ -32,8 +32,8 @@ public:
     double bestFitness;
     double averageFitness;
     unsigned stagnantCoeff;
-private:
     std::vector<Genome*> genomes;
+private:
            // How many generations without an improvement
 
     // Parameters for compatibility function

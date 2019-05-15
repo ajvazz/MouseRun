@@ -31,8 +31,8 @@ public:
     int newNodeId;
     int newConnectionId;
 
-    std::vector<NodeGene> nodes;
-    std::vector<ConnectionGene> connections;
+    std::vector<NodeGene*> nodes;
+    std::vector<ConnectionGene*> connections;
     double fitness;
     int numInputs;
     int numOutputs;

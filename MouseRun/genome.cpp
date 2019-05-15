@@ -13,45 +13,45 @@ Genome::Genome(int inputs, int outputs)
     int nextNodeId = 0;
     // input nodes - [0, inputs)
     for(; nextNodeId < numInputs; nextNodeId++) {
-        nodes.emplace_back(nextNodeId, 0);
+        nodes.push_back(new NodeGene(nextNodeId, 0));
     }
 
     // output nodes - [inputs, inputs + outputs)
     for(; nextNodeId < numInputs + numOutputs; nextNodeId++) {
-        nodes.emplace_back(nextNodeId, 1);
+        nodes.push_back(new NodeGene(nextNodeId, 1));
     }
 
     // bias node
     biasNodeId = nextNodeId;
-    nodes.emplace_back(biasNodeId, 0);
+    nodes.push_back(new NodeGene(biasNodeId, 0));
 }
 
 std::vector<double> Genome::feedForward(std::vector<double> inputValues)
 {
     // set input values for input nodes
     for(int i = 0; i < numInputs; i++) {
-        nodes[i].outputValue = inputValues[i];
+        nodes[i]->outputValue = inputValues[i];
     }
-    nodes[biasNodeId].outputValue = 1;
+    nodes[biasNodeId]->outputValue = 1;
 
     // nodes should be activated layer by layer
-    std::vector<NodeGene> sortedNodes = nodes;
+    std::vector<NodeGene*> sortedNodes = nodes;
     std::sort(nodes.begin(), nodes.end(),
-              [](const NodeGene &a, const NodeGene &b){return a.layer <= b.layer;});
+              [](const NodeGene *a, const NodeGene *b){return a->layer <= b->layer;});
 
     for(auto&& node : sortedNodes) {
-        node.activate();
+        node->activate();
     }
 
     // get output values of output nodes
     std::vector<double> result(numOutputs);
     for(int i = numInputs; i < numInputs + numOutputs; i++) {
-        result[i - numInputs] = nodes[i].outputValue;
+        result[i - numInputs] = nodes[i]->outputValue;
     }
 
     // reset inputSum
     for(auto&& node : nodes) {
-        node.inputSum = 0;
+        node->inputSum = 0;
     }
 
     return result;
@@ -59,6 +59,7 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
 
 void Genome::mutate()
 {
+    qDebug() << "mutate genome";
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(0, 1);
@@ -66,7 +67,7 @@ void Genome::mutate()
     if(r < 0.8) {
         // 80% - weights mutation
         for(auto&& conn : connections) {
-            conn.mutateWeight();
+            conn->mutateWeight();
         }
     } else if(r < 0.8 + 0.03) {
         // 3% - new node
@@ -88,42 +89,42 @@ void Genome::addNode()
         return;
     }
     std::uniform_int_distribution<> dist(0, connections.size() - 1);
-    ConnectionGene &connection = connections[dist(gen)];
+    ConnectionGene *connection = connections[dist(gen)];
     // not disconnecting bias
-    if(connection.inNode->id == biasNodeId && connections.size() == 1) {
+    if(connection->inNode->id == biasNodeId && connections.size() == 1) {
         addConnection();
         return;
     }
     // pick a nonbias inNode
-    while(connection.inNode->id == biasNodeId) {
+    while(connection->inNode->id == biasNodeId) {
         connection = connections[dist(gen)];
     }
     // disable picked connection
-    connection.enabled = false;
+    connection->enabled = false;
 
-    emit nodeIdNeeded(this, connection.innovationNumber);
+    emit nodeIdNeeded(this, connection->innovationNumber);
     // they are connected with Qt::DirectConnection, so the slot will execute by now - newNodeId will be correct
-    NodeGene newNode(newNodeId, connection.inNode->layer + 1);
+    NodeGene *newNode = new NodeGene(newNodeId, connection->inNode->layer + 1);
 
-    emit connectionIdNeeded(this, connection.inNode->id, newNodeId);
+    emit connectionIdNeeded(this, connection->inNode->id, newNodeId);
     // newConnectionId is set  - create connection between old inNode and new node
-    ConnectionGene connection1(connection.inNode, &newNode, 1, newConnectionId);
+    ConnectionGene *connection1 = new ConnectionGene(connection->inNode, newNode, 1, newConnectionId);
     connections.push_back(connection1);
 
-    emit connectionIdNeeded(this, newNodeId, connection.outNode->id);
+    emit connectionIdNeeded(this, newNodeId, connection->outNode->id);
     // newConnectionId is set - create connection between new node and old outNode
-    ConnectionGene connection2(&newNode, connection.outNode, connection.weight, newConnectionId);
+    ConnectionGene *connection2 = new ConnectionGene(newNode, connection->outNode, connection->weight, newConnectionId);
     connections.push_back(connection2);
 
     emit connectionIdNeeded(this, biasNodeId, newNodeId);
     // newConnectionId is set - create connection between bias node and new node
-    ConnectionGene connection3(&nodes[biasNodeId], &newNode, 0, newConnectionId);
+    ConnectionGene *connection3 = new ConnectionGene(nodes[biasNodeId], newNode, 0, newConnectionId);
     connections.emplace_back(connection3);
 
-    if(newNode.layer == connection.outNode->layer) {
+    if(newNode->layer == connection->outNode->layer) {
         for(int i = 0; i < nodes.size(); i++) {
-            if(nodes[i].layer >= newNode.layer) {
-                nodes[i].layer++;
+            if(nodes[i]->layer >= newNode->layer) {
+                nodes[i]->layer++;
             }
         }
         layers++;
@@ -131,9 +132,9 @@ void Genome::addNode()
     nodes.push_back(newNode);
 
     // update changed connections
-    connection.inNode->outputConnections.push_back(connection1);
-    newNode.outputConnections.push_back(connection2);
-    nodes[biasNodeId].outputConnections.push_back(connection3);
+    connection->inNode->outputConnections.push_back(*connection1);
+    newNode->outputConnections.push_back(*connection2);
+    nodes[biasNodeId]->outputConnections.push_back(*connection3);
 }
 
 void Genome::addConnection()
@@ -142,26 +143,26 @@ void Genome::addConnection()
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dist(0, nodes.size() - 1);
-    NodeGene fromNode = nodes[dist(gen)];
-    NodeGene toNode = nodes[dist(gen)];
+    NodeGene *fromNode = nodes[dist(gen)];
+    NodeGene *toNode = nodes[dist(gen)];
 
-    while(fromNode.layer == toNode.layer || fromNode.isConnectedTo(toNode) || toNode.isConnectedTo(fromNode)) {
+    while(fromNode->layer == toNode->layer || fromNode->isConnectedTo(*toNode) || toNode->isConnectedTo(*fromNode)) {
         fromNode = nodes[dist(gen)];
         toNode = nodes[dist(gen)];
     }
 
     // swap if needed
-    if(fromNode.layer > toNode.layer) {
+    if(fromNode->layer > toNode->layer) {
         std::swap(fromNode, toNode);
     }
 
-    emit connectionIdNeeded(this, fromNode.id, toNode.id);
+    emit connectionIdNeeded(this, fromNode->id, toNode->id);
     std::uniform_real_distribution<> distReal(-1, 1);
-    ConnectionGene connection(&fromNode, &toNode, distReal(gen), newConnectionId);
+    ConnectionGene *connection = new ConnectionGene(fromNode, toNode, distReal(gen), newConnectionId);
     connections.push_back(connection);
 
     // update changed connections
-    fromNode.outputConnections.push_back(connection);
+    fromNode->outputConnections.push_back(*connection);
 }
 
 Genome* Genome::crossover(Genome *other)
@@ -175,7 +176,7 @@ Genome* Genome::crossover(Genome *other)
     for(auto&& c1 : connections) {
         int index = -1;
         for(int i = 0; i < other->connections.size(); i++) {
-            if(c1.innovationNumber == other->connections[i].innovationNumber) {
+            if(c1->innovationNumber == other->connections[i]->innovationNumber) {
                 index = i;
             }
         }
@@ -190,28 +191,29 @@ Genome* Genome::crossover(Genome *other)
             bool enable = true;
 
             // if connection is disabled in both parents, there is 75% chance that it is disabled in the child
-            if(!c1.enabled || !other->connections[index].enabled) {
+            if(!c1->enabled || !other->connections[index]->enabled) {
                 if(dist(gen) < 0.75) {
                     enable = false;
                 }
             }
 
             if(dist(gen) < 0.5) {
-                ConnectionGene childConnection(c1.inNode, c1.outNode, c1.weight, c1.innovationNumber);
-                childConnection.enabled = enable;
+                ConnectionGene *childConnection = new ConnectionGene(c1->inNode, c1->outNode, c1->weight, c1->innovationNumber);
+                childConnection->enabled = enable;
                 child->connections.push_back(childConnection);
             } else {
-                ConnectionGene childConnection(other->connections[index].inNode, other->connections[index].outNode,
-                                               other->connections[index].weight, other->connections[index].innovationNumber);
-                childConnection.enabled = enable;
+                ConnectionGene *childConnection = new ConnectionGene
+                                                (other->connections[index]->inNode, other->connections[index]->outNode,
+                                               other->connections[index]->weight, other->connections[index]->innovationNumber);
+                childConnection->enabled = enable;
                 child->connections.push_back(childConnection);
             }
 
         } else {
             // excess or disjoint gene - inherit from the more fit parent - this parent
 
-            ConnectionGene childConnection(c1.inNode, c1.outNode, c1.weight, c1.innovationNumber);
-            childConnection.enabled = c1.enabled;
+            ConnectionGene *childConnection = new ConnectionGene(c1->inNode, c1->outNode, c1->weight, c1->innovationNumber);
+            childConnection->enabled = c1->enabled;
             child->connections.push_back(childConnection);
         }
     }
@@ -239,10 +241,10 @@ Genome *Genome::clone()
 void Genome::connectNodes()
 {
     for(int i = 0; i < nodes.size(); i++) {
-        nodes[i].outputConnections.clear();
+        nodes[i]->outputConnections.clear();
     }
 
     for(int i = 0; i < connections.size(); i++) {
-        connections[i].inNode->outputConnections.push_back(connections[i]);
+        connections[i]->inNode->outputConnections.push_back(*connections[i]);
     }
 }

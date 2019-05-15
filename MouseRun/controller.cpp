@@ -4,7 +4,7 @@
 #include <QTime>
 #include <QDebug>
 
-const int populationSize = 50;
+const int populationSize = 20;
 
 // number of inputs and outputs for the genome (nn)
 const int numInputs = 4;
@@ -67,6 +67,9 @@ void Controller::calculateFitness(int i)
 {
     population[i]->fitness = time.elapsed();
     qDebug() << i << population[i]->fitness;
+    for(int j = 0; j < population[i]->connections.size(); j++) {
+        qDebug() << "innonum: " << population[i]->connections[j]->innovationNumber << population[i]->connections[j]->weight;
+    }
     numGenomesDone++;
     if(numGenomesDone == populationSize) {
         evolve();
@@ -87,61 +90,81 @@ void Controller::runGeneration()
 
 void Controller::evolve()
 {
-    qDebug() << "evolve";
+//    qDebug() << "evolve";
 
 
     // Speciate
-    for(auto & genome : population){
+    for(size_t i = 0; i < population.size(); i++) {
         bool newSpecies = true;
-        for(auto & s : species) {
-            if(s.isSameSpecies(*genome)) {
-                s.addToSpecies(genome);
+        for(size_t j = 0; j < species.size(); j++) {
+            if(species[j]->isSameSpecies(*population[i])) {
+                species[j]->addToSpecies(population[i]);
                 newSpecies = false;
+                qDebug() << "same species";
                 break;
             }
         }
 
         if (newSpecies) {
-            species.push_back(Species(genome));
+            qDebug() << "new species";
+            species.push_back(new Species(population[i]));
         }
     }
 
     // Create new population
     std::vector<Genome*> newPopulation;
 
+
+
     double averageFitnessSum = 0;
 
     for(size_t i = 0; i < species.size(); i++) {
 
-        species[i].sortGenomesByFitness();
-        species[i].decimateSpecies();
-        species[i].calcAverageFitness();
-        species[i].explicitFitnessSharing();
-        averageFitnessSum += species[i].averageFitness;
-    }
 
-    std::sort(species.begin(), species.end(),
-              [](const Species &a, const Species &b){return a.averageFitness > b.averageFitness;} );
-
-    for(size_t i = 0; i < species.size(); i++) {
-
-        if (!species[i].allowedReproduction) {
+        if (!species[i]->allowedReproduction) {
+//            qDebug() << "jaoov";
             continue;
             // maybe delete this species
         }
-
-        newPopulation.push_back(species[i].representGenome->clone());
-
-        int numOffspring = std::floor(species[i].averageFitness / averageFitnessSum * populationSize) - 1;
-
-        for(int i = 0; i < numOffspring; i++) {
-            newPopulation.push_back(species[i].createOffspring());
-        }
+        species[i]->sortGenomesByFitness();
+        species[i]->decimateSpecies();
+        species[i]->calcAverageFitness();
+        species[i]->explicitFitnessSharing();
+        averageFitnessSum += species[i]->averageFitness;
     }
 
-    while(newPopulation.size() < populationSize) {
+    std::sort(species.begin(), species.end(),
+              [](const Species *a, const Species *b){return a->averageFitness > b->averageFitness;} );
 
-        newPopulation.push_back(species[0].createOffspring());
+//    qDebug() << species.size();
+    for(size_t i = 0; i < species.size(); i++) {
+
+
+        if (!species[i]->allowedReproduction) {
+//            qDebug() << "jaoov";
+            continue;
+            // maybe delete this species
+        }
+//        qDebug() << "newpopsize: " << newPopulation.size();
+
+        newPopulation.push_back(species[i]->representGenome->clone());
+
+        int numOffspring = std::floor(species[i]->averageFitness / averageFitnessSum * populationSize) - 1;
+
+//        qDebug() << "numOffspring: " << numOffspring;
+//        qDebug() << "SACE UNUTRASNJI FOR";
+        for(int j = 0; j < numOffspring; j++) {
+//            qDebug() << "FOR: " << species[i]->genomes.size();
+            newPopulation.push_back(species[i]->createOffspring());
+//            qDebug() << "posle FOR-a: " << species[i]->genomes.size();
+        }
+//        qDebug() << "GOTOV UNUTRASNJI FOR";
+    }
+
+    // the rest chosen from best species
+    while(newPopulation.size() < populationSize) {
+//        qDebug() << "fali nesto";
+        newPopulation.push_back(species[0]->createOffspring());
     }
 
     // TODO interspecies breeding (0.001 prob)
