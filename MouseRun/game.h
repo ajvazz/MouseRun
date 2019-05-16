@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include <QGraphicsView>
+#include <QTime>
 
 #include "player.h"
 #include "cat.h"
@@ -11,10 +12,10 @@ class Game : public QGraphicsView
     Q_OBJECT
 
 public:
-    Game(Genome* genome, int i);
+    Game(std::vector<Genome*> genomes, int bId);
 
 signals:
-    void died(int i);
+    void died(size_t i, double score);
 
 public slots:
     // Update the Game
@@ -22,10 +23,10 @@ public slots:
 
 private:
     int i;
-
+    int bId;
     QGraphicsScene* scene;
-    Player* player;
-    Genome* genome;
+    std::vector<Player*> mice;
+    std::vector<Genome*> genomes;
     Cat* cat;
 
     // Method that initializes the game
@@ -35,15 +36,14 @@ private:
     void spawnObjects();
     void deleteObjects();
 
-    // Disable player deselection
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseDoubleClickEvent(QMouseEvent* event) override;
-
     QGraphicsItem *leftBound;
     QGraphicsItem *rightBound;
 
     qreal boundW;
 
+    int numOfAlive;
+
+    QTime time;
 };
 
 #endif // GAME_H

@@ -5,7 +5,6 @@
 #include "genome.h"
 
 #include <QObject>
-#include <QTime>
 
 class Controller : public QObject
 {
@@ -19,7 +18,7 @@ public slots:
 
     void getConnId(Genome* genome, int fromNodeId, int toNodeId);
 
-    void calculateFitness(int i);
+    void calculateFitness(size_t i, double score);
 
 private:
     // population of genetic algorithm
@@ -44,8 +43,6 @@ private:
 
     // if given key doesn't exist in the mapNode, nextNodeId is incremented and set as value in the map
     int nextNodeId;
-
-    QTime time;
 
     int numGenomesDone;
 

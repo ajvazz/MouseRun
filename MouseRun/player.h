@@ -20,27 +20,24 @@ public:
                QWidget *widget) override;
 
     // Input methods
-//    void keyPressEvent(QKeyEvent * event) override;
-//    void keyReleaseEvent(QKeyEvent * event) override;
+    void keyPressEvent(QKeyEvent * event) override;
+    void keyReleaseEvent(QKeyEvent * event) override;
 
-    bool alive;
 
     qreal energy;     // How many times can the player jump
 
     qreal angle;    // How much SHOULD the player rotate
 
     QMap<char, bool> keysDown;
+    bool alive;
 
 private:
-
-    // TODO enum
 
     qreal speed;    // How fast can the player move
 
     QColor color;   // Color of the mouse body
     QColor color2;  // Color of the mouse ears
 
-    bool jumping;   // Is the player jumping
     bool inWater;   // Is the player in water
 
     static const qreal turningAngle; // How much CAN the player rotate
@@ -51,8 +48,6 @@ private:
 private slots:
     void move();    // Slot that moves the player
     void update(); // Slot that updates the player
-
-    void moveAllItems(qreal d);
 };
 
 #endif // PLAYER_H

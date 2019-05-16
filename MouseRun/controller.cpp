@@ -5,11 +5,11 @@
 #include <QDebug>
 
 const int populationSize = 1000;
-    const int batchSize = 10;
+    const int batchSize = 50;
 
 // number of inputs and outputs for the genome (nn)
 const int numInputs = 4;
-const int numOutputs = 5;
+const int numOutputs = 4;
 
 Controller::Controller()
     : generationNum{0},
@@ -28,13 +28,14 @@ Controller::Controller()
                 this, SLOT(getNodeId(Genome*, int)),
                 Qt::DirectConnection);
 
+
         connect(genome, SIGNAL(connectionIdNeeded(Genome*, int, int)),
                 this, SLOT(getConnId(Genome*, int, int)),
                 Qt::DirectConnection);
+
     }
 
 
-    time.start();
 //    for(int i = 0; i < numOfGenerations; i++) {
 //        runGeneration();
 //        time.restart();
@@ -65,9 +66,9 @@ void Controller::getConnId(Genome *genome, int fromNodeId, int toNodeId)
     genome->newConnectionId = mapConn[key];
 }
 
-void Controller::calculateFitness(int i)
+void Controller::calculateFitness(size_t i, double score)
 {
-    population[i]->fitness = time.elapsed();
+    population[i]->fitness = score;
     qDebug() << i << population[i]->fitness;
 //    for(int j = 0; j < population[i]->connections.size(); j++) {
 //        qDebug() << "innonum: " << population[i]->connections[j]->innovationNumber << population[i]->connections[j]->weight;
@@ -82,14 +83,15 @@ void Controller::calculateFitness(int i)
 
 void Controller::runGeneration(int bNum)
 {
-    time.restart();
     qDebug() << "runBatch";
     // Calculate fitness as the time a player stays alive
+    std::vector<Genome*> batch;
     for(size_t i = 0; i < batchSize; i++) {
-        Game *game = new Game(population[bNum * batchSize + i], bNum * batchSize + i);
-        connect(game, SIGNAL(died(int)),
-                this, SLOT(calculateFitness(int)));
+        batch.push_back(population[bNum * batchSize + i]);
     }
+    Game *game = new Game(batch, bNum * batchSize);
+    connect(game, SIGNAL(died(size_t, double)),
+            this, SLOT(calculateFitness(size_t, double)));
 }
 
 void Controller::evolve()

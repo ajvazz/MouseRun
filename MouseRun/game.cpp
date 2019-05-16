@@ -8,10 +8,19 @@
 #include <QRandomGenerator>
 
 
-Game::Game(Genome* genome, int i)
-    : i{i},
-      genome{genome}
+Game::Game(std::vector<Genome*> genomes, int bId)
+    : bId{bId},
+      genomes{genomes}
 {
+
+    numOfAlive = genomes.size();
+
+    // initialize players
+    for(size_t i = 0; i < genomes.size(); i++){
+        Player* player = new Player();
+        mice.push_back(player);
+    }
+
     // Create the scene
     int width = 600;
     int height = 600;
@@ -35,24 +44,22 @@ Game::Game(Genome* genome, int i)
 
 void Game::start()
 {
-    // Spawn player
-    player = new Player();
-    scene->addItem(player);
+    // Spawn players
+    for(size_t i = 0; i < mice.size(); i++){
+        mice[i]->setPos(QRandomGenerator::global()->bounded(-200,200)
+                        , 0);
+        scene->addItem(mice[i]);
+    }
 
     // Spawn cat
     cat = new Cat();
-    cat->setPos(0, 600);
+    cat->setPos(0, 270);
     scene->addItem(cat);
 
     // Update the Game every 15 ms
     static QTimer updateTimer;
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(update()));
-    updateTimer.start(50);
-
-    // Spawn new objects every 500 ms
-//    static QTimer spawnTimer;
-//    connect(&spawnTimer, SIGNAL(timeout()), this, SLOT(spawnObjects()));
-//    spawnTimer.start(1500);
+    updateTimer.start(30);
 
     // Setup left and right bound
     boundW = 500;
@@ -65,40 +72,65 @@ void Game::start()
     scene->addItem(leftBound);
     scene->addItem(rightBound);
 
-    // Show the scene
+    // Show the scene and start the time
+    time.start();
     show();
-}
-
-// Disable player deselection
-void Game::mousePressEvent(QMouseEvent *event)
-{
-    Q_UNUSED(event);
-}
-
-// Disable player deselection
-void Game::mouseDoubleClickEvent(QMouseEvent *event)
-{
-    Q_UNUSED(event);
 }
 
 void Game::update()
 {
-    if (!player->alive){
-        // The player died
-        emit died(i);
-        delete player;
+    // check for dead mice
+    for(size_t i = 0; i < mice.size(); i++){
+        if(!mice[i]){
+            continue;
+        }
+        else if (!mice[i]->alive){
+            // A player died
+            numOfAlive--;
+//            qDebug() << "time" << time.elapsed();
+            emit died(bId + i, time.elapsed());
+            delete mice[i];
+            mice[i] = nullptr;
+        }
+    }
+
+    if(numOfAlive == 0){
         deleteLater();
         return;
     }
 
+
+    // make mice think
+    for(size_t i = 0; i < mice.size(); i++){
+        if(mice[i] != nullptr && mice[i]->alive){
+            // feed forward...
+            std::vector<double> inputs;
+            inputs.push_back(mice[i]->pos().x());
+            inputs.push_back(mice[i]->pos().y());
+            inputs.push_back(mice[i]->energy);
+            inputs.push_back(mice[i]->angle);
+
+            std::vector<double> outputs = genomes[i]->feedForward(inputs);
+            mice[i]->keysDown['w'] = outputs[0] >= 0.5;
+            mice[i]->keysDown['a'] = outputs[1] >= 0.5;
+            mice[i]->keysDown['s'] = outputs[2] >= 0.5;
+            mice[i]->keysDown['d'] = outputs[3] >= 0.5;
+        }
+    }
+
+
+
+    // run game normaly
+
     spawnObjects();
     deleteObjects();
 
-    // Move the cat
-    QPointF v = player->pos() - cat->pos();
-    qreal d = sqrt(v.x() * v.x() + v.y() * v.y());
-    QPointF dir = v / d;
-    cat->setPos(cat->pos() + dir * cat->speed);
+    // Move the cat == move everything else
+    foreach (QGraphicsItem* item, scene->items()) {
+        if(Cat *cat = dynamic_cast<Cat*>(item)) continue;
+        item->setPos(item->pos().x(), item->pos().y() + cat->speed);
+    }
+
 
     // Water bound is moving with player
     // If you don't know why 200, enter scene height (=600) or similar, see what happens
@@ -111,26 +143,12 @@ void Game::update()
         leftBound->setPos(leftBound->pos().x(), 0);
         rightBound->setPos(rightBound->pos().x(), 0);
     }
-
-    // feed forward...
-    std::vector<double> inputs;
-    inputs.push_back(player->pos().x());
-    inputs.push_back(player->energy);
-    inputs.push_back(player->angle);
-    inputs.push_back(cat->pos().y());
-
-    std::vector<double> outputs = genome->feedForward(inputs);
-    player->keysDown['w'] = outputs[0] >= 0.5;
-    player->keysDown['a'] = outputs[1] >= 0.5;
-    player->keysDown['s'] = outputs[2] >= 0.5;
-    player->keysDown['d'] = outputs[3] >= 0.5;
-    player->keysDown['j'] = outputs[4] >= 0.5;
 }
 
 
 void Game::spawnObjects()
 {
-    if (scene->items().length() >= 25) return;
+    if (scene->items().length() >= 25 + numOfAlive) return;
 
     qreal p = QRandomGenerator::global()->bounded(1.0);
 
@@ -150,7 +168,7 @@ void Game::spawnObjects()
     item->setRotation(QRandomGenerator::global()->bounded(-180, 180));
     item->setPos(QRandomGenerator::global()->bounded(int(leftBound->pos().x() + boundW/2),
                                                      int(rightBound->pos().x() - boundW/2)),
-                 player->pos().y() - QRandomGenerator::global()->bounded(300, 1000));
+                 cat->pos().y() - QRandomGenerator::global()->bounded(600, 1200));
 
     scene->addItem(item);
 }
@@ -158,7 +176,7 @@ void Game::spawnObjects()
 void Game::deleteObjects()
 {
     foreach (QGraphicsItem* item, scene->items()) {
-        if (item->pos().y() > 350){
+        if (item->pos().y() > cat->pos().y()){
             if (Cheese *cheese = dynamic_cast<Cheese*>(item)){
                 cheese->deleteLater();
             }
@@ -167,6 +185,9 @@ void Game::deleteObjects()
             }
             else if (WaterPool *pool = dynamic_cast<WaterPool*>(item)){
                 pool->deleteLater();
+            }
+            else if (Player *player = dynamic_cast<Player*>(item)){
+                player->alive = false;
             }
         }
     }
