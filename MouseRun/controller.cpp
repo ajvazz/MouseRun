@@ -4,7 +4,8 @@
 #include <QTime>
 #include <QDebug>
 
-const int populationSize = 20;
+const int populationSize = 1000;
+    const int batchSize = 10;
 
 // number of inputs and outputs for the genome (nn)
 const int numInputs = 4;
@@ -15,7 +16,7 @@ Controller::Controller()
       nextConnId{0},
       nextNodeId{numInputs + numOutputs + 1},
       numGenomesDone{0},
-      numOfGenerations{20}
+      numOfGenerations{999999999}
 {
     // create initial population
     for(int i = 0; i < populationSize; i++) {
@@ -40,7 +41,8 @@ Controller::Controller()
 //        numGenomesDone = 0;
 //    }
 
-    runGeneration();
+    qDebug() << "runGeneration";
+    runGeneration(0);
 }
 
 
@@ -67,22 +69,24 @@ void Controller::calculateFitness(int i)
 {
     population[i]->fitness = time.elapsed();
     qDebug() << i << population[i]->fitness;
-    for(int j = 0; j < population[i]->connections.size(); j++) {
-        qDebug() << "innonum: " << population[i]->connections[j]->innovationNumber << population[i]->connections[j]->weight;
-    }
+//    for(int j = 0; j < population[i]->connections.size(); j++) {
+//        qDebug() << "innonum: " << population[i]->connections[j]->innovationNumber << population[i]->connections[j]->weight;
+//    }
     numGenomesDone++;
     if(numGenomesDone == populationSize) {
         evolve();
+    }else if(numGenomesDone % batchSize == 0){
+        runGeneration(numGenomesDone / batchSize);
     }
 }
 
-void Controller::runGeneration()
+void Controller::runGeneration(int bNum)
 {
-    qDebug() << "runGeneration";
+    time.restart();
+    qDebug() << "runBatch";
     // Calculate fitness as the time a player stays alive
-    for(size_t i = 0; i < population.size(); i++) {
-
-        Game *game = new Game(population[i], i);
+    for(size_t i = 0; i < batchSize; i++) {
+        Game *game = new Game(population[bNum * batchSize + i], bNum * batchSize + i);
         connect(game, SIGNAL(died(int)),
                 this, SLOT(calculateFitness(int)));
     }
@@ -100,13 +104,13 @@ void Controller::evolve()
             if(species[j]->isSameSpecies(*population[i])) {
                 species[j]->addToSpecies(population[i]);
                 newSpecies = false;
-                qDebug() << "same species";
+//                qDebug() << "same species";
                 break;
             }
         }
 
         if (newSpecies) {
-            qDebug() << "new species";
+//            qDebug() << "new species";
             species.push_back(new Species(population[i]));
         }
     }
@@ -175,8 +179,7 @@ void Controller::evolve()
     }
 
     if(--numOfGenerations > 0) {
-        time.restart();
         numGenomesDone = 0;
-        runGeneration();
+        runGeneration(0);
     }
 }

@@ -41,13 +41,13 @@ void Game::start()
 
     // Spawn cat
     cat = new Cat();
-    cat->setPos(0, 1000);
+    cat->setPos(0, 600);
     scene->addItem(cat);
 
     // Update the Game every 15 ms
     static QTimer updateTimer;
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(update()));
-    updateTimer.start(15);
+    updateTimer.start(50);
 
     // Spawn new objects every 500 ms
 //    static QTimer spawnTimer;
@@ -118,8 +118,6 @@ void Game::update()
     inputs.push_back(player->energy);
     inputs.push_back(player->angle);
     inputs.push_back(cat->pos().y());
-
-//    player->keysDown['w'] = true;
 
     std::vector<double> outputs = genome->feedForward(inputs);
     player->keysDown['w'] = outputs[0] >= 0.5;

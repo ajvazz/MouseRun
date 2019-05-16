@@ -59,7 +59,7 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
 
 void Genome::mutate()
 {
-    qDebug() << "mutate genome";
+//    qDebug() << "mutate genome";
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(0, 1);

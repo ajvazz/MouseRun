@@ -53,7 +53,7 @@ private:
 
     void evolve();
 
-    void runGeneration();
+    void runGeneration(int);
 };
 
 #endif // CONTROLLER_H

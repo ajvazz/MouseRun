@@ -73,9 +73,8 @@ bool Species::isSameSpecies(const Genome &genome)
 
 void Species::sortGenomesByFitness()
 {
-    // NOTE: may have an error, had nothing to test this on
     std::sort(genomes.begin(), genomes.end(), [] (const auto &lhs, const auto &rhs) {
-        return lhs->fitness > rhs->fitness;     // Or '<' idk
+        return lhs->fitness > rhs->fitness;
     });
 
     // Checking if we should penalize the species if the fittest is not so fit

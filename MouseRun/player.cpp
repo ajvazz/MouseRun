@@ -41,12 +41,12 @@ Player::Player()
     // Move the player every 15 miliseconds
     static QTimer moveTimer;
     connect(&moveTimer, SIGNAL(timeout()), this, SLOT(move()));
-    moveTimer.start(15);
+    moveTimer.start(50);
 
     // Update the player every 50 miliseconds
     static QTimer updateTimer;
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(update()));
-    updateTimer.start(15);
+    updateTimer.start(50);
 
 }
 
