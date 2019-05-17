@@ -28,10 +28,11 @@ Controller::Controller()
                 this, SLOT(getNodeId(Genome*, int)),
                 Qt::DirectConnection);
 
-
         connect(genome, SIGNAL(connectionIdNeeded(Genome*, int, int)),
                 this, SLOT(getConnId(Genome*, int, int)),
                 Qt::DirectConnection);
+
+        qDebug() << genome;
 
     }
 
@@ -178,6 +179,25 @@ void Controller::evolve()
     population.clear();
     for(size_t i = 0; i < populationSize; i++) {
         population.push_back(newPopulation[i]);
+    }
+
+//    qDebug() << "novi: ";
+    // connect newly created population of genomes to slots
+    for(size_t i = 0; i < populationSize; i++) {
+        connect(population[i], SIGNAL(nodeIdNeeded(Genome*, int)),
+                this, SLOT(getNodeId(Genome*, int)),
+                Qt::DirectConnection);
+
+        connect(population[i], SIGNAL(connectionIdNeeded(Genome*, int, int)),
+                this, SLOT(getConnId(Genome*, int, int)),
+                Qt::DirectConnection);
+
+//        qDebug() << population[i];
+    }
+
+    // mutate...
+    for(size_t i = 0; i < populationSize; i++) {
+        population[i]->mutate();
     }
 
     if(--numOfGenerations > 0) {

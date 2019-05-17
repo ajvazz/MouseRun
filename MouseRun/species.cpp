@@ -120,7 +120,7 @@ Genome* Species::createOffspring()
             offspring = p2->crossover(p1);
         }
     }
-    offspring->mutate();
+//    offspring->mutate();
 
 //    qDebug() << "species: createOffspring end" << genomes.size();
 

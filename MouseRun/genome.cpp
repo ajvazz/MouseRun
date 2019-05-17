@@ -102,7 +102,9 @@ void Genome::addNode()
     // disable picked connection
     connection->enabled = false;
 
+
     emit nodeIdNeeded(this, connection->innovationNumber);
+
     // they are connected with Qt::DirectConnection, so the slot will execute by now - newNodeId will be correct
     NodeGene *newNode = new NodeGene(newNodeId, connection->inNode->layer + 1);
 
@@ -156,7 +158,9 @@ void Genome::addConnection()
         std::swap(fromNode, toNode);
     }
 
+//    qDebug() << "pre EMIT-a: fromNode->id = " << fromNode->id << ", toNode->id = " << toNode->id;
     emit connectionIdNeeded(this, fromNode->id, toNode->id);
+//    qDebug() << "posle EMIT-a: newConnectionId = " << newConnectionId;
     std::uniform_real_distribution<> distReal(-1, 1);
     ConnectionGene *connection = new ConnectionGene(fromNode, toNode, distReal(gen), newConnectionId);
     connections.push_back(connection);
