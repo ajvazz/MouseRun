@@ -34,12 +34,16 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
     }
     nodes[biasNodeId]->outputValue = 1;
 
+//    qDebug() << nodes;
     // nodes should be activated layer by layer
     std::vector<NodeGene*> sortedNodes = nodes;
-    std::sort(nodes.begin(), nodes.end(),
-              [](const NodeGene *a, const NodeGene *b){return a->layer <= b->layer;});
+    std::sort(sortedNodes.begin(), sortedNodes.end(),
+              [](NodeGene *a, NodeGene *b){return a->layer < b->layer;});
+
+
 
     for(auto&& node : sortedNodes) {
+//        qDebug() << "feedForward: " << node->outputConnections.size();
         node->activate();
     }
 
@@ -52,6 +56,7 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
     // reset inputSum
     for(auto&& node : nodes) {
         node->inputSum = 0;
+//        qDebug() << "feedForward 2: " << node->outputConnections.size();
     }
 
     return result;
@@ -60,20 +65,27 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
 void Genome::mutate()
 {
 //    qDebug() << "mutate genome";
+//    qDebug() << "mutate: " << connections.size();
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(0, 1);
     double r = dist(gen);
     if(r < 0.8) {
         // 80% - weights mutation
+//        qDebug() << "weights mutation";
+        if(connections.empty()) {
+            addConnection();
+        }
         for(auto&& conn : connections) {
             conn->mutateWeight();
         }
     } else if(r < 0.8 + 0.03) {
+//        qDebug() << "addNode mutation";
         // 3% - new node
         addNode();
     } else if(r < 0.8 + 0.03 + 0.05) {
         // 5% - new connection
+//        qDebug() << "addConnection mutation";
         addConnection();
     }
 }
@@ -102,29 +114,32 @@ void Genome::addNode()
     // disable picked connection
     connection->enabled = false;
 
-
+//    qDebug() << "addNode: signal";
     emit nodeIdNeeded(this, connection->innovationNumber);
-
+//    qDebug() << "posle signala: " << newNodeId;
     // they are connected with Qt::DirectConnection, so the slot will execute by now - newNodeId will be correct
     NodeGene *newNode = new NodeGene(newNodeId, connection->inNode->layer + 1);
 
     emit connectionIdNeeded(this, connection->inNode->id, newNodeId);
+//    qDebug() << "posle 2. signala: " << newConnectionId;
     // newConnectionId is set  - create connection between old inNode and new node
     ConnectionGene *connection1 = new ConnectionGene(connection->inNode, newNode, 1, newConnectionId);
     connections.push_back(connection1);
 
     emit connectionIdNeeded(this, newNodeId, connection->outNode->id);
+//    qDebug() << "posle 3. signala: " << newConnectionId;
     // newConnectionId is set - create connection between new node and old outNode
     ConnectionGene *connection2 = new ConnectionGene(newNode, connection->outNode, connection->weight, newConnectionId);
     connections.push_back(connection2);
 
     emit connectionIdNeeded(this, biasNodeId, newNodeId);
+//    qDebug() << "posle 4. signala: " << newConnectionId;
     // newConnectionId is set - create connection between bias node and new node
     ConnectionGene *connection3 = new ConnectionGene(nodes[biasNodeId], newNode, 0, newConnectionId);
-    connections.emplace_back(connection3);
+    connections.push_back(connection3);
 
     if(newNode->layer == connection->outNode->layer) {
-        for(int i = 0; i < nodes.size(); i++) {
+        for(size_t i = 0; i < nodes.size(); i++) {
             if(nodes[i]->layer >= newNode->layer) {
                 nodes[i]->layer++;
             }
@@ -133,14 +148,21 @@ void Genome::addNode()
     }
     nodes.push_back(newNode);
 
+//    qDebug() << "pred kraj";
     // update changed connections
-    connection->inNode->outputConnections.push_back(*connection1);
-    newNode->outputConnections.push_back(*connection2);
-    nodes[biasNodeId]->outputConnections.push_back(*connection3);
+//    connection->inNode->outputConnections.push_back(connection1);
+//    newNode->outputConnections.push_back(connection2);
+//    nodes[biasNodeId]->outputConnections.push_back(connection3);
+
+    connectNodes();
 }
 
 void Genome::addConnection()
 {
+//    qDebug() << "fja: addConnection" << connections.size();
+//    for(size_t i = 0; i < nodes.size(); i++) {
+//        qDebug() << nodes[i]->outputConnections.size();
+//    }
     // pick two nodes
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -148,7 +170,24 @@ void Genome::addConnection()
     NodeGene *fromNode = nodes[dist(gen)];
     NodeGene *toNode = nodes[dist(gen)];
 
-    while(fromNode->layer == toNode->layer || fromNode->isConnectedTo(*toNode) || toNode->isConnectedTo(*fromNode)) {
+    // nije nula?????
+//    qDebug() << "fromNode: " << fromNode->outputConnections.size();
+//    qDebug() << "toNode: " << toNode->outputConnections.size();
+
+
+//    if(fromNode->layer == toNode->layer) {
+//        qDebug() << "lejers";
+//    }
+//    if(fromNode->isConnectedTo(toNode)) {
+//        qDebug() << "povezani";
+//    }
+//    if(toNode->isConnectedTo(fromNode)) {
+//        qDebug() << "povezani 2";
+//    }
+
+
+    while(fromNode->layer == toNode->layer || fromNode->isConnectedTo(toNode) || toNode->isConnectedTo(fromNode)) {
+//        qDebug() << "while...";
         fromNode = nodes[dist(gen)];
         toNode = nodes[dist(gen)];
     }
@@ -166,7 +205,9 @@ void Genome::addConnection()
     connections.push_back(connection);
 
     // update changed connections
-    fromNode->outputConnections.push_back(*connection);
+//    fromNode->outputConnections.push_back(connection);
+
+    connectNodes();
 }
 
 Genome* Genome::crossover(Genome *other)
@@ -239,6 +280,8 @@ Genome *Genome::clone()
     genome->connections = connections;
     genome->newConnectionId = newConnectionId;
 
+    genome->connectNodes();
+
     return genome;
 }
 
@@ -249,6 +292,6 @@ void Genome::connectNodes()
     }
 
     for(int i = 0; i < connections.size(); i++) {
-        connections[i]->inNode->outputConnections.push_back(*connections[i]);
+        connections[i]->inNode->outputConnections.push_back(connections[i]);
     }
 }

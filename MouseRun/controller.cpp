@@ -5,10 +5,10 @@
 #include <QDebug>
 
 const int populationSize = 1000;
-    const int batchSize = 50;
+const int batchSize = 100;
 
 // number of inputs and outputs for the genome (nn)
-const int numInputs = 4;
+const int numInputs = 76;
 const int numOutputs = 4;
 
 Controller::Controller()
@@ -31,9 +31,6 @@ Controller::Controller()
         connect(genome, SIGNAL(connectionIdNeeded(Genome*, int, int)),
                 this, SLOT(getConnId(Genome*, int, int)),
                 Qt::DirectConnection);
-
-        qDebug() << genome;
-
     }
 
 
@@ -197,6 +194,8 @@ void Controller::evolve()
 
     // mutate...
     for(size_t i = 0; i < populationSize; i++) {
+        qDebug() << "petlja: mutate: " << i;
+        population[i]->connectNodes();
         population[i]->mutate();
     }
 

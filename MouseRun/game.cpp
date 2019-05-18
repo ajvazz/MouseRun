@@ -77,6 +77,54 @@ void Game::start()
     show();
 }
 
+void Game::makeDecisions()
+{
+
+    // make mice think
+    for(size_t i = 0; i < mice.size(); i++){
+        if(mice[i] != nullptr && mice[i]->alive){
+            // feed forward...
+            std::vector<double> inputs;
+            inputs.push_back(mice[i]->pos().x());
+            inputs.push_back(mice[i]->pos().y());
+            inputs.push_back(mice[i]->energy);
+            inputs.push_back(mice[i]->angle);
+
+//            qDebug() << scene->items().size();
+
+            foreach (QGraphicsItem* item, scene->items()) {
+                double value;
+                if(Cat *cat = dynamic_cast<Cat*>(item)) {
+//                    value = -100;
+                    continue;
+                } else if(Cheese *cheese = dynamic_cast<Cheese*>(item)) {
+                    value = cheese->nutrition;
+                } else if(MouseTrap *trap = dynamic_cast<MouseTrap*>(item)) {
+                    value = -100;
+                } else if(WaterPool *pool = dynamic_cast<WaterPool*>(item)) {
+                    value = -10;
+                } else if(WaterBound *bound = dynamic_cast<WaterBound*>(item)) {
+                    continue;
+                } else if(Player *player = dynamic_cast<Player*>(item)) {
+                    continue;
+                }
+
+                inputs.push_back(item->pos().x());
+                inputs.push_back(item->pos().y());
+                inputs.push_back(value);
+            }
+//            qDebug() << inputs.size();
+
+
+            std::vector<double> outputs = genomes[i]->feedForward(inputs);
+            mice[i]->keysDown['w'] = outputs[0] >= 0.5;
+            mice[i]->keysDown['a'] = outputs[1] >= 0.5;
+            mice[i]->keysDown['s'] = outputs[2] >= 0.5;
+            mice[i]->keysDown['d'] = outputs[3] >= 0.5;
+        }
+    }
+}
+
 void Game::update()
 {
     // check for dead mice
@@ -99,31 +147,12 @@ void Game::update()
         return;
     }
 
-
-    // make mice think
-    for(size_t i = 0; i < mice.size(); i++){
-        if(mice[i] != nullptr && mice[i]->alive){
-            // feed forward...
-            std::vector<double> inputs;
-            inputs.push_back(mice[i]->pos().x());
-            inputs.push_back(mice[i]->pos().y());
-            inputs.push_back(mice[i]->energy);
-            inputs.push_back(mice[i]->angle);
-
-            std::vector<double> outputs = genomes[i]->feedForward(inputs);
-            mice[i]->keysDown['w'] = outputs[0] >= 0.5;
-            mice[i]->keysDown['a'] = outputs[1] >= 0.5;
-            mice[i]->keysDown['s'] = outputs[2] >= 0.5;
-            mice[i]->keysDown['d'] = outputs[3] >= 0.5;
-        }
-    }
-
-
-
     // run game normaly
 
     spawnObjects();
     deleteObjects();
+
+    makeDecisions();
 
     // Move the cat == move everything else
     foreach (QGraphicsItem* item, scene->items()) {
@@ -148,29 +177,30 @@ void Game::update()
 
 void Game::spawnObjects()
 {
-    if (scene->items().length() >= 25 + numOfAlive) return;
+    while(scene->items().length() < 25 + numOfAlive) {
 
-    qreal p = QRandomGenerator::global()->bounded(1.0);
+        qreal p = QRandomGenerator::global()->bounded(1.0);
 
-    QGraphicsItem *item;
+        QGraphicsItem *item;
 
-    if (p < 0.2){
-        item = new MouseTrap();
+        if (p < 0.2){
+            item = new MouseTrap();
 
-    } else if (p < 0.8){
-        item = new Cheese();
+        } else if (p < 0.8){
+            item = new Cheese();
 
-    } else{
-        item = new WaterPool(QRandomGenerator::global()->bounded(30, 100),
-                             QRandomGenerator::global()->bounded(30, 130));
+        } else{
+            item = new WaterPool(QRandomGenerator::global()->bounded(30, 100),
+                                 QRandomGenerator::global()->bounded(30, 130));
+        }
+
+        item->setRotation(QRandomGenerator::global()->bounded(-180, 180));
+        item->setPos(QRandomGenerator::global()->bounded(int(leftBound->pos().x() + boundW/2),
+                                                         int(rightBound->pos().x() - boundW/2)),
+                     cat->pos().y() - QRandomGenerator::global()->bounded(600, 1200));
+
+        scene->addItem(item);
     }
-
-    item->setRotation(QRandomGenerator::global()->bounded(-180, 180));
-    item->setPos(QRandomGenerator::global()->bounded(int(leftBound->pos().x() + boundW/2),
-                                                     int(rightBound->pos().x() - boundW/2)),
-                 cat->pos().y() - QRandomGenerator::global()->bounded(600, 1200));
-
-    scene->addItem(item);
 }
 
 void Game::deleteObjects()

@@ -12,7 +12,7 @@ public:
 
     void activate();
 
-    bool isConnectedTo(const NodeGene &other);
+    bool isConnectedTo(NodeGene *other);
 
 // better solution later...
 //private:
@@ -20,7 +20,7 @@ public:
     int layer;
     double inputSum;
     double outputValue;
-    std::vector<ConnectionGene> outputConnections;
+    std::vector<ConnectionGene*> outputConnections;
 
     double activationFunction(double x);
 };

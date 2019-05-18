@@ -2,9 +2,10 @@
 #include "connectiongene.h"
 
 #include <cmath>
+#include <QDebug>
 
 NodeGene::NodeGene(int id, int layer)
-    : id{id}, layer{layer}, inputSum{0}
+    : id{id}, layer{layer}, inputSum{0}, outputValue{0}
 {
 
 }
@@ -17,16 +18,19 @@ void NodeGene::activate()
         outputValue = activationFunction(inputSum);
     }
 
-    for(const auto& c : outputConnections) {
-        c.outNode->inputSum += c.weight * outputValue;
+    // nula je
+//    qDebug() << "node activate: " << outputConnections.size();
+    for(int i = 0; i < outputConnections.size(); i++) {
+        outputConnections[i]->outNode->inputSum += outputConnections[i]->weight * outputValue;
     }
 }
 
 // returns true if this node is connected to other node
-bool NodeGene::isConnectedTo(const NodeGene &other)
+bool NodeGene::isConnectedTo(NodeGene *other)
 {
-    for(const auto& c : outputConnections) {
-        if(c.outNode->id == other.id) {
+    for(int i = 0; i < outputConnections.size(); i++) {
+//        qDebug() << outputConnections[i]->outNode->id;
+        if(outputConnections[i]->outNode->id == other->id) {
             return true;
         }
     }

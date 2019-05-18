@@ -44,6 +44,7 @@ private:
     int numOfAlive;
 
     QTime time;
+    void makeDecisions();
 };
 
 #endif // GAME_H
