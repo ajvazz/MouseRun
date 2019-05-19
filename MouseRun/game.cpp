@@ -49,13 +49,13 @@ void Game::start()
     // Spawn players
     for(size_t i = 0; i < mice.size(); i++){
         mice[i]->setPos(QRandomGenerator::global()->bounded(-200,200)
-                        , 0);
+                        , -300);
         scene->addItem(mice[i]);
     }
 
     // Spawn cat
     cat = new Cat();
-    cat->setPos(0, 300);
+    cat->setPos(0, 0);
     scene->addItem(cat);
 
     // Update the Game
@@ -75,6 +75,7 @@ void Game::start()
     scene->addItem(rightBound);
 
     // initialize item spawning
+//    spawnObjectsInArea(1);
     spawnObjectsInArea(2);
     spawnObjectsInArea(3);
     spawnObjectsInArea(4);
@@ -104,9 +105,6 @@ void Game::makeDecisions()
 
             foreach (QGraphicsItem* item, scene->items()) {
 
-                int mouseArea = mice[i]->pos().y() / areaH;
-                int itemArea = -item->pos().y() / areaH;
-
                 if(Player* x = dynamic_cast<Player*>(item)){
                     continue;
                 }
@@ -116,57 +114,79 @@ void Game::makeDecisions()
                 if(WaterBound* x = dynamic_cast<WaterBound*>(item)){
                     continue;
                 }
+                if(QGraphicsLineItem* x = dynamic_cast<QGraphicsLineItem*>(item)){
+                    continue;
+                }
 
-                if(mouseArea == itemArea){
+                double mousePos = mice[i]->pos().y();
+                double itemPos = item->pos().y();
+                double firstAreaStart = int(mousePos / areaH) * areaH + (areaH - bla);
+                double nextAreaStart = firstAreaStart - areaH;
+                double nextAreaEnd = nextAreaStart - areaH;
+
+
+                if(itemPos < firstAreaStart && itemPos > nextAreaStart){
                     currentArea.push_back(item);
-                }else if(mouseArea + 1 == itemArea){
+                }else if(itemPos < nextAreaStart && itemPos > nextAreaEnd){
                     nextArea.push_back(item);
+                }
+            }
+
+            if(currentArea.empty()){
+                for(size_t j=0; j<24/*magic*/; j++){
+                    inputs.push_back(0.0);
                 }
             }
 
 //            qDebug() << currentArea.size() << nextArea.size();
 
-            for(size_t i=0; i<currentArea.size(); i++){
-                if(Cheese* cheese = dynamic_cast<Cheese*>(currentArea[i])){
+            for(size_t j=0; j<currentArea.size(); j++){
+                if(Cheese* cheese = dynamic_cast<Cheese*>(currentArea[j])){
                     inputs.push_back(cheese->pos().x());
                     inputs.push_back(cheese->pos().y());
-                    inputs.push_back(100);
+//                    inputs.push_back(100);
+//                    qDebug() << "1 cheese: " << j;
                 }
             }
-            for(size_t i=0; i<currentArea.size(); i++){
-                if(WaterPool* pool = dynamic_cast<WaterPool*>(currentArea[i])){
+            for(size_t j=0; j<currentArea.size(); j++){
+                if(WaterPool* pool = dynamic_cast<WaterPool*>(currentArea[j])){
                     inputs.push_back(pool->pos().x());
                     inputs.push_back(pool->pos().y());
-                    inputs.push_back(-50);
+//                    inputs.push_back(-50);
+//                    qDebug() << "1 pool: " << j;
                 }
             }
-            for(size_t i=0; i<currentArea.size(); i++){
-                if(MouseTrap* trap = dynamic_cast<MouseTrap*>(currentArea[i])){
+            for(size_t j=0; j<currentArea.size(); j++){
+                if(MouseTrap* trap = dynamic_cast<MouseTrap*>(currentArea[j])){
                     inputs.push_back(trap->pos().x());
                     inputs.push_back(trap->pos().y());
-                    inputs.push_back(-500);
+//                    inputs.push_back(-500);
+//                    qDebug() << "1 trap: " << j;
                 }
             }
 
-            for(size_t i=0; i<nextArea.size(); i++){
-                if(Cheese* cheese = dynamic_cast<Cheese*>(nextArea[i])){
+            for(size_t j=0; j<nextArea.size(); j++){
+                if(Cheese* cheese = dynamic_cast<Cheese*>(nextArea[j])){
                     inputs.push_back(cheese->pos().x());
                     inputs.push_back(cheese->pos().y());
-                    inputs.push_back(100);
+//                    inputs.push_back(100);
+//                    qDebug() << "2 cheese: " << j;
                 }
             }
-            for(size_t i=0; i<nextArea.size(); i++){
-                if(WaterPool* pool = dynamic_cast<WaterPool*>(nextArea[i])){
+            for(size_t j=0; j<nextArea.size(); j++){
+                if(WaterPool* pool = dynamic_cast<WaterPool*>(nextArea[j])){
                     inputs.push_back(pool->pos().x());
                     inputs.push_back(pool->pos().y());
-                    inputs.push_back(-50);
+//                    inputs.push_back(-50);
+//                    qDebug() << "2 pool: " << j;
                 }
             }
-            for(size_t i=0; i<nextArea.size(); i++){
-                if(MouseTrap* trap = dynamic_cast<MouseTrap*>(nextArea[i])){
+            for(size_t j=0; j<nextArea.size(); j++){
+                if(MouseTrap* trap = dynamic_cast<MouseTrap*>(nextArea[j])){
                     inputs.push_back(trap->pos().x());
                     inputs.push_back(trap->pos().y());
-                    inputs.push_back(-500);
+//                    inputs.push_back(-500);
+//                    qDebug() << "2 trap: " << j;
                 }
             }
 
@@ -271,7 +291,7 @@ void Game::spawnObjectsInArea(int area)
         item->setRotation(QRandomGenerator::global()->bounded(-180, 180));
         item->setPos(QRandomGenerator::global()->bounded(int(leftBound->pos().x() + boundW/2),
                                                          int(rightBound->pos().x() - boundW/2)),
-                     - area * areaH + QRandomGenerator::global()->bounded(0, areaH));
+                     - area * areaH + QRandomGenerator::global()->bounded(5, areaH - 5));
 
         scene->addItem(item);
     }
@@ -315,7 +335,7 @@ void Game::deleteObjects()
                 continue;
             }
         }
-        if (item->pos().y() > cat->pos().y() + 350){
+        if (item->pos().y() > cat->pos().y() + 500){
             if (Cheese *cheese = dynamic_cast<Cheese*>(item)){
                 cheese->deleteLater();
             }

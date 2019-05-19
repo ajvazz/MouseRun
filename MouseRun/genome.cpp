@@ -29,7 +29,7 @@ Genome::Genome(int inputs, int outputs)
 std::vector<double> Genome::feedForward(std::vector<double> inputValues)
 {
     // set input values for input nodes
-    for(int i = 0; i < numInputs; i++) {
+    for(size_t i = 0; i < numInputs; i++) {
         nodes[i]->outputValue = inputValues[i];
     }
     nodes[biasNodeId]->outputValue = 1;
@@ -49,7 +49,7 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
 
     // get output values of output nodes
     std::vector<double> result(numOutputs);
-    for(int i = numInputs; i < numInputs + numOutputs; i++) {
+    for(size_t i = numInputs; i < numInputs + numOutputs; i++) {
         result[i - numInputs] = nodes[i]->outputValue;
     }
 

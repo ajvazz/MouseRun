@@ -8,7 +8,7 @@ const int populationSize = 1000;
 const int batchSize = 100;
 
 // number of inputs and outputs for the genome (nn)
-const int numInputs = 76;
+const int numInputs = 52;
 const int numOutputs = 4;
 
 Controller::Controller()
