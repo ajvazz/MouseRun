@@ -2,10 +2,8 @@
 #include <QPainter>
 #include <QRandomGenerator>
 
-const int Cheese::maxNutrition = 3;
 
 Cheese::Cheese()
-    : nutrition(1 + QRandomGenerator::global()->bounded(maxNutrition))
 {
     setZValue(1);
 }

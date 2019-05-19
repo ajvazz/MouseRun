@@ -31,6 +31,8 @@ public:
     QMap<char, bool> keysDown;
     bool alive;
 
+    double score;
+
 private:
 
     qreal speed;    // How fast can the player move

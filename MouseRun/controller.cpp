@@ -40,7 +40,7 @@ Controller::Controller()
 //        numGenomesDone = 0;
 //    }
 
-    qDebug() << "runGeneration";
+//    qDebug() << "runGeneration";
     runGeneration(0);
 }
 
@@ -67,12 +67,17 @@ void Controller::getConnId(Genome *genome, int fromNodeId, int toNodeId)
 void Controller::calculateFitness(size_t i, double score)
 {
     population[i]->fitness = score;
-    qDebug() << i << population[i]->fitness;
+    qDebug() << "Brain: " << i
+             << "Fitness: " << population[i]->fitness
+             << "Synapses: " << population[i]->connections.size()
+             << "Neurons: " << population[i]->nodes.size()
+             << "Layers: " << population[i]->layers;
 //    for(int j = 0; j < population[i]->connections.size(); j++) {
 //        qDebug() << "innonum: " << population[i]->connections[j]->innovationNumber << population[i]->connections[j]->weight;
 //    }
     numGenomesDone++;
     if(numGenomesDone == populationSize) {
+        generationNum++;
         evolve();
     }else if(numGenomesDone % batchSize == 0){
         runGeneration(numGenomesDone / batchSize);
@@ -81,7 +86,7 @@ void Controller::calculateFitness(size_t i, double score)
 
 void Controller::runGeneration(int bNum)
 {
-    qDebug() << "runBatch";
+    qDebug() << "Generation:" << generationNum << "Batch:" << bNum;
     // Calculate fitness as the time a player stays alive
     std::vector<Genome*> batch;
     for(size_t i = 0; i < batchSize; i++) {
@@ -194,7 +199,7 @@ void Controller::evolve()
 
     // mutate...
     for(size_t i = 0; i < populationSize; i++) {
-        qDebug() << "petlja: mutate: " << i;
+//        qDebug() << "petlja: mutate: " << i;
         population[i]->connectNodes();
         population[i]->mutate();
     }

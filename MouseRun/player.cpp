@@ -11,20 +11,20 @@
 #include <QDebug>
 
 const int Player::maxSpeed = 6;
-const int Player::maxEnergy = 10;
 const qreal Player::turningAngle = 0.5;
 const qreal Player::consumption = 0.01;
 
 
 Player::Player()
     :
-      energy(5),
-      angle(0),
-      // Pick random colors for ears and body
-      color(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
-      color2(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)),
+      angle{0},
       alive{true},
-      inWater(false)
+      score{0},
+      speed{5},
+      // Pick random colors for ears and body
+      color{QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)},
+      color2{QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)},
+      inWater{false}
 {
     keysDown['w'] = false;
     keysDown['a'] = false;
@@ -34,18 +34,11 @@ Player::Player()
     setZValue(2);
 
     setPos(0, 0);
-    setFlag(QGraphicsItem::ItemIsFocusable);
-    setFocus();
 
-    // Move the player every 15 miliseconds
-    static QTimer moveTimer;
-    connect(&moveTimer, SIGNAL(timeout()), this, SLOT(move()));
-    moveTimer.start(20);
-
-    // Update the player every 50 miliseconds
+    // Update the player
     static QTimer updateTimer;
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(update()));
-    updateTimer.start(20);
+    updateTimer.start(15);
 
 }
 
@@ -137,25 +130,46 @@ void Player::keyReleaseEvent(QKeyEvent *event)
 void Player::move()
 {
     // MOVE
+    QPointF newPos;
     // Move forward
     if(keysDown['w'] && !keysDown['s']){
-        QPointF newPos = mapToParent(0, -speed);
+        if(inWater){
+            newPos = mapToParent(0, -1);
+        }else{
+            newPos = mapToParent(0, -speed);
+            score += speed;
+        }
+
         setPos(newPos.x(), newPos.y());
     }
     // Move backward
     else if(keysDown['s'] && !keysDown['w']){
-        QPointF newPos = mapToParent(0, speed/2);
+        if(inWater){
+            newPos = mapToParent(0, -1);
+        }else{
+            newPos = mapToParent(0, speed/2);
+        }
         setPos(newPos.x(), newPos.y());
     }
 
     // ROTATE
     // Rotate left
     if(keysDown['a'] && !keysDown['d']){
-        angle = -turningAngle;
+        if(inWater){
+            angle = -0.1;
+        }else{
+            angle = -turningAngle;
+            score += turningAngle * 50;
+        }
     }
     // Rotate right
     else if(keysDown['d'] && !keysDown['a']){
-        angle = turningAngle;
+        if(inWater){
+            angle = 0.1;
+        }else{
+            angle = turningAngle;
+            score += turningAngle * 50;
+        }
     }
 
     // Rotate
@@ -168,17 +182,12 @@ void Player::move()
 
 void Player::update()
 {
-    // The more energy the player has, the faster he moves
-    speed = maxSpeed/3.0 + (energy * (2.0 * maxSpeed / maxEnergy / 3.0));
-
-    // Unless he is trying to move trough the water
-    if(inWater) speed = 1;
+    score -= 1;
     inWater = false;
 
-    // Player is losing energy over time
-    energy -= consumption;
-    if(energy <= 0) energy = 0;
-    if(energy >= maxEnergy) energy = maxEnergy;
+    // Player is losing speed over time
+    if(speed > 3)
+        speed -= consumption;
 
 
     // Check for collision with other items
@@ -187,16 +196,21 @@ void Player::update()
 
         // If the item is a cheese, eat it
         if(Cheese *cheese = dynamic_cast<Cheese*>(item)){
-            energy += cheese->nutrition;
+            score += 100;
+            speed = maxSpeed;
 //            cheese->deleteLater();
         }
         // If the item is a trap, die
         else if(dynamic_cast<MouseTrap*>(item)){
             alive = false;
+            score -= 500;
         }
 
         else if(dynamic_cast<WaterPool*>(item)){
             inWater = true;
+            score -= 10;
         }
     }
+
+    move();
 }

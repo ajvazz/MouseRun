@@ -70,6 +70,7 @@ void Genome::mutate()
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(0, 1);
     double r = dist(gen);
+
     if(r < 0.8) {
         // 80% - weights mutation
 //        qDebug() << "weights mutation";
@@ -79,14 +80,22 @@ void Genome::mutate()
         for(auto&& conn : connections) {
             conn->mutateWeight();
         }
-    } else if(r < 0.8 + 0.03) {
-//        qDebug() << "addNode mutation";
-        // 3% - new node
-        addNode();
-    } else if(r < 0.8 + 0.03 + 0.05) {
-        // 5% - new connection
+    } else if(r < 0.9) {
+        // 10% - new connection
 //        qDebug() << "addConnection mutation";
         addConnection();
+        // 10% X (50%)^N to add N connections
+        while(dist(gen) < 0.5){
+            addConnection();
+        }
+    } else if(r < 0.95) {
+//        qDebug() << "addNode mutation";
+        // 5% - new node
+        addNode();
+        // 5% X (25%)^N to add N nodes
+        while(dist(gen) < 0.25){
+            addNode();
+        }
     }
 }
 

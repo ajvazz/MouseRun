@@ -2,7 +2,6 @@
 #define GAME_H
 
 #include <QGraphicsView>
-#include <QTime>
 
 #include "player.h"
 #include "cat.h"
@@ -12,7 +11,7 @@ class Game : public QGraphicsView
     Q_OBJECT
 
 public:
-    Game(std::vector<Genome*> genomes, int bId);
+    Game(std::vector<Genome*> genomes, unsigned bId);
 
 signals:
     void died(size_t i, double score);
@@ -22,8 +21,11 @@ public slots:
     void update();
 
 private:
+
+    size_t bestI;
+
     int i;
-    int bId;
+    unsigned bId;
     QGraphicsScene* scene;
     std::vector<Player*> mice;
     std::vector<Genome*> genomes;
@@ -33,18 +35,21 @@ private:
     void start();
 
     // Method that manages object spawning and removal
+    void spawnObjectsInArea(int area);
     void spawnObjects();
     void deleteObjects();
 
     QGraphicsItem *leftBound;
     QGraphicsItem *rightBound;
 
-    qreal boundW;
+    double bla;
+    int areaNum;
 
+    qreal boundW;
     int numOfAlive;
 
-    QTime time;
     void makeDecisions();
+    void focusBest();
 };
 
 #endif // GAME_H

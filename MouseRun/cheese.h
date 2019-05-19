@@ -14,10 +14,6 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget) override;
 
-    qreal nutrition; // How much energy does a mouse get from eating
-
-private:
-    const static int maxNutrition;
 };
 
 #endif // CHEESE_H
