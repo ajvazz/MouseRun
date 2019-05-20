@@ -40,6 +40,12 @@ Game::Game(std::vector<Genome*> genomes, unsigned bId)
 
     setBackgroundBrush(QBrush(QColor(55,205,55)));
 
+
+    // Window for nn
+    nnView = new QGraphicsView();
+    nnView->setScene(new QGraphicsScene(nnView));
+//    nnView->setSceneRect(0, 0, 300, 800);
+    nnView->setRenderHint(QPainter::Antialiasing);
     // Start the game
     start();
 }
@@ -74,6 +80,7 @@ void Game::start()
     scene->addItem(leftBound);
     scene->addItem(rightBound);
 
+
     // initialize item spawning
 //    spawnObjectsInArea(1);
     spawnObjectsInArea(2);
@@ -81,8 +88,11 @@ void Game::start()
     spawnObjectsInArea(4);
     bla = areaH;
     areaNum = 4;
+
     // Show the scene
+    drawGenome(genomes[0]);
     show();
+    nnView->show();
 }
 
 void Game::makeDecisions()
@@ -95,8 +105,8 @@ void Game::makeDecisions()
             std::vector<double> inputs;
             inputs.push_back(mice[i]->pos().x());
             inputs.push_back(mice[i]->pos().y());
-            inputs.push_back(mice[i]->energy);
-            inputs.push_back(mice[i]->angle);
+            inputs.push_back(mice[i]->speed);
+            inputs.push_back(mice[i]->rotation());
 
 //            qDebug() << scene->items().size();
             // Mouse can only see items 1 area ahead (2 x (2 traps, 2 pools, 8 cheese) = 24 items)
@@ -105,16 +115,11 @@ void Game::makeDecisions()
 
             foreach (QGraphicsItem* item, scene->items()) {
 
-                if(Player* x = dynamic_cast<Player*>(item)){
-                    continue;
-                }
-                if(Cat* x = dynamic_cast<Cat*>(item)){
-                    continue;
-                }
-                if(WaterBound* x = dynamic_cast<WaterBound*>(item)){
-                    continue;
-                }
-                if(QGraphicsLineItem* x = dynamic_cast<QGraphicsLineItem*>(item)){
+                if(WaterBound* x = dynamic_cast<WaterBound*>(item)) { continue; }
+                else if(Cheese* x = dynamic_cast<Cheese*>(item)) {}
+                else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {}
+                else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {}
+                else {
                     continue;
                 }
 
@@ -205,7 +210,7 @@ void Game::makeDecisions()
 void Game::update()
 {
 
-//    qDebug() << bestI;
+    //    qDebug() << bestI;
 
     // check for dead mice, determine best mouse
     for(size_t i = 0; i < mice.size(); i++){
@@ -214,19 +219,24 @@ void Game::update()
         }
         else if (!mice[i]->alive){
             // A player died
-            numOfAlive--;
 //            qDebug() << "time" << time.elapsed();
-            emit died(bId + i, mice[i]->score);
+
+            // fitness function
+            double fitness = mice[i]->calcFitness();
+            emit died(bId + i, fitness);
             delete mice[i];
             mice[i] = nullptr;
+            numOfAlive--;
         }else{
-            if(!mice[bestI] || mice[i]->score > mice[bestI]->score){
+            if(!mice[bestI] || mice[i]->pos().y() < mice[bestI]->pos().y()){
                 bestI = i;
+                drawGenome(genomes[bestI]);
             }
         }
     }
 
     if(numOfAlive == 0){
+        delete nnView;
         deleteLater();
         return;
     }
@@ -268,6 +278,68 @@ void Game::update()
 void Game::focusBest(){
 
     setSceneRect(mice[bestI]->sceneBoundingRect());
+}
+
+void Game::drawGenome(Genome *gen)
+{
+
+    nnView->scene()->clear();
+
+    double d = 10;
+
+    double offset = 2*d;
+    double offsetL = 5*d;
+
+    std::map<size_t, size_t> layers;
+
+    for (size_t i = 0; i < gen->nodes.size(); i++){
+        QGraphicsEllipseItem* node = new QGraphicsEllipseItem(0, 0, d, d);
+        size_t l = gen->nodes[i]->layer;
+        if(layers.count(l) == 0){
+            layers[l] = 1;
+        }else{
+            layers[l]++;
+        }
+//        qDebug() << l;
+        node->setPos(l * offsetL, layers[l] * offset);
+        nnView->scene()->addItem(node);
+    }
+
+    for(size_t i = 0; i < gen->connections.size(); i++){
+
+
+        size_t n1Layer = gen->connections[i]->inNode->layer;
+        size_t n2Layer = gen->connections[i]->outNode->layer;
+
+        double n1x = n1Layer * offsetL;
+        double n1y = layers[n1Layer] * offset;
+        double n2x = n2Layer * offsetL;
+        double n2y = layers[n2Layer] * offset;
+
+        int r = 0;
+        int g = 0;
+        int b = 0;
+
+
+        if(gen->connections[i]->enabled){
+
+            double w = gen->connections[i]->weight;
+            if(w > 0){
+                g = w * 255;
+            }else{
+                r = -w * 255;
+            }
+        }else{
+            b = 255;
+        }
+
+        QColor color(r,g,b);
+        nnView->scene()->addLine(n1x + d/2, n1y + d/2, n2x + d/2, n2y + d/2, QPen(color));
+    }
+
+    layers.clear();
+    nnView->scene()->setSceneRect(nnView->scene()->itemsBoundingRect());
+    nnView->fitInView(nnView->scene()->sceneRect(), Qt::KeepAspectRatio);
 }
 
 void Game::spawnObjectsInArea(int area)

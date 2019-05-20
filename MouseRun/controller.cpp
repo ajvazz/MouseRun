@@ -4,7 +4,7 @@
 #include <QTime>
 #include <QDebug>
 
-const int populationSize = 1000;
+const int populationSize = 2500;
 const int batchSize = 100;
 
 // number of inputs and outputs for the genome (nn)
@@ -150,7 +150,7 @@ void Controller::evolve()
 
 
         if (!species[i]->allowedReproduction) {
-//            qDebug() << "jaoov";
+//            qDebug() << "jalov";
             continue;
             // maybe delete this species
         }

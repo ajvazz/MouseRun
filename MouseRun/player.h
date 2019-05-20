@@ -24,28 +24,32 @@ public:
     void keyReleaseEvent(QKeyEvent * event) override;
 
 
-    qreal energy;     // How many times can the player jump
-
     qreal angle;    // How much SHOULD the player rotate
+
+    double traveled;
+    double rotated;
+    double spentInWater;
+    double cheeseEaten;
+
+
+    qreal speed;    // How fast can the player move
 
     QMap<char, bool> keysDown;
     bool alive;
 
-    double score;
+
+    double calcFitness();
 
 private:
 
-    qreal speed;    // How fast can the player move
+    bool inWater;   // Is the player in water
+    static const qreal turningAngle; // How much CAN the player rotate
+    static const int maxSpeed;       // Maximum movement speed
+    static const qreal consumption;  // How much energy is player losing over time
 
     QColor color;   // Color of the mouse body
     QColor color2;  // Color of the mouse ears
 
-    bool inWater;   // Is the player in water
-
-    static const qreal turningAngle; // How much CAN the player rotate
-    static const int maxSpeed;       // Maximum movement speed
-    static const int maxEnergy;      // Maximum total energy
-    static const qreal consumption;  // How much energy is player losing over time
 
 private slots:
     void move();    // Slot that moves the player

@@ -71,25 +71,34 @@ void Genome::mutate()
     std::uniform_real_distribution<> dist(0, 1);
     double r = dist(gen);
 
-    if(r < 0.8) {
-        // 80% - weights mutation
+    double weightsProb = 0.75;
+    double connectionProb = 0.15;;
+    double nodeProb = 0.05;
+
+    if(r < weightsProb) {
+        // 75% - weights mutation
 //        qDebug() << "weights mutation";
+        // Add connection if no connections exist
         if(connections.empty()) {
             addConnection();
         }
         for(auto&& conn : connections) {
             conn->mutateWeight();
         }
-    } else if(r < 0.9) {
-        // 10% - new connection
+    } else if(r < weightsProb + connectionProb) {
+        // 15% - new connection
 //        qDebug() << "addConnection mutation";
         addConnection();
         // 10% X (50%)^N to add N connections
         while(dist(gen) < 0.5){
             addConnection();
         }
-    } else if(r < 0.95) {
+    } else if(r < weightsProb + connectionProb + nodeProb) {
 //        qDebug() << "addNode mutation";
+        // 5% X (50%)^N to add N connections
+        while(dist(gen) < 0.5){
+            addConnection();
+        }
         // 5% - new node
         addNode();
         // 5% X (25%)^N to add N nodes
@@ -128,6 +137,7 @@ void Genome::addNode()
 //    qDebug() << "posle signala: " << newNodeId;
     // they are connected with Qt::DirectConnection, so the slot will execute by now - newNodeId will be correct
     NodeGene *newNode = new NodeGene(newNodeId, connection->inNode->layer + 1);
+//    qDebug() << "ADD NODE" << connection->inNode->layer + 1;
 
     emit connectionIdNeeded(this, connection->inNode->id, newNodeId);
 //    qDebug() << "posle 2. signala: " << newConnectionId;
@@ -225,7 +235,11 @@ Genome* Genome::crossover(Genome *other)
     child->layers = layers;
     child->biasNodeId = biasNodeId;
     // all nodes are inherited from more fit parent - this Genome
-    child->nodes = nodes;
+//    child->nodes = nodes;
+    child->nodes.clear();
+    for(size_t i = 0; i < nodes.size(); i++){
+        child->nodes.push_back(new NodeGene(nodes[i]->id, nodes[i]->layer));
+    }
 
     for(auto&& c1 : connections) {
         int index = -1;
@@ -245,7 +259,7 @@ Genome* Genome::crossover(Genome *other)
             bool enable = true;
 
             // if connection is disabled in both parents, there is 75% chance that it is disabled in the child
-            if(!c1->enabled || !other->connections[index]->enabled) {
+            if(!c1->enabled && !other->connections[index]->enabled) {
                 if(dist(gen) < 0.75) {
                     enable = false;
                 }
@@ -281,12 +295,26 @@ Genome *Genome::clone()
 {
     Genome* genome = new Genome(numInputs, numOutputs);
 
-    genome->nodes = nodes;
+//    genome->nodes = nodes;
+    genome->nodes.clear();
+    for(size_t i = 0; i < nodes.size(); i++){
+        genome->nodes.push_back(new NodeGene(nodes[i]->id, nodes[i]->layer));
+    }
     genome->layers = layers;
     genome->fitness = fitness;
     genome->newNodeId = newNodeId;
     genome->biasNodeId = biasNodeId;
-    genome->connections = connections;
+//    genome->connections = connections;
+    for(size_t i = 0; i < connections.size(); i++){
+        genome->connections.push_back(new ConnectionGene(connections[i]->inNode,
+                                                         connections[i]->outNode,
+                                                         connections[i]->weight,
+                                                         connections[i]->innovationNumber));
+
+        genome->connections[i]->enabled = connections[i]->enabled;
+
+    }
+
     genome->newConnectionId = newConnectionId;
 
     genome->connectNodes();

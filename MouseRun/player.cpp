@@ -14,12 +14,14 @@ const int Player::maxSpeed = 6;
 const qreal Player::turningAngle = 0.5;
 const qreal Player::consumption = 0.01;
 
-
 Player::Player()
     :
       angle{0},
+      traveled{0},
+      rotated{0},
+      spentInWater{0},
+      cheeseEaten{0},
       alive{true},
-      score{0},
       speed{5},
       // Pick random colors for ears and body
       color{QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)},
@@ -126,6 +128,27 @@ void Player::keyReleaseEvent(QKeyEvent *event)
     }
 }
 
+double Player::calcFitness()
+{
+    double fitness = 0;
+
+    fitness += cheeseEaten * 50;
+    fitness -= spentInWater * 10;
+    fitness += traveled * 10;
+    fitness += rotated * 10;
+
+    // penalty for being an idiot
+//    if(!traveled){
+//        fitness = -5000;
+//    }
+
+//    if(!rotated){
+//        fitness -= 5000;
+//    }
+
+    return fitness;
+}
+
 
 void Player::move()
 {
@@ -137,7 +160,7 @@ void Player::move()
             newPos = mapToParent(0, -1);
         }else{
             newPos = mapToParent(0, -speed);
-            score += speed;
+            traveled += speed;
         }
 
         setPos(newPos.x(), newPos.y());
@@ -148,6 +171,7 @@ void Player::move()
             newPos = mapToParent(0, -1);
         }else{
             newPos = mapToParent(0, speed/2);
+            traveled += speed/2;
         }
         setPos(newPos.x(), newPos.y());
     }
@@ -159,7 +183,6 @@ void Player::move()
             angle = -0.1;
         }else{
             angle = -turningAngle;
-            score += turningAngle * 50;
         }
     }
     // Rotate right
@@ -168,7 +191,6 @@ void Player::move()
             angle = 0.1;
         }else{
             angle = turningAngle;
-            score += turningAngle * 50;
         }
     }
 
@@ -177,12 +199,12 @@ void Player::move()
         qreal dx = sin(angle) * 20;
         setRotation(rotation() + dx);
         angle = 0;
+        rotated += turningAngle;
     }
 }
 
 void Player::update()
 {
-    score -= 1;
     inWater = false;
 
     // Player is losing speed over time
@@ -196,19 +218,19 @@ void Player::update()
 
         // If the item is a cheese, eat it
         if(Cheese *cheese = dynamic_cast<Cheese*>(item)){
-            score += 100;
+            cheeseEaten++;
             speed = maxSpeed;
-//            cheese->deleteLater();
+//          cheese->deleteLater();
         }
         // If the item is a trap, die
         else if(dynamic_cast<MouseTrap*>(item)){
             alive = false;
-            score -= 500;
+//            score += trapValue;
         }
 
         else if(dynamic_cast<WaterPool*>(item)){
             inWater = true;
-            score -= 10;
+            spentInWater++;
         }
     }
 

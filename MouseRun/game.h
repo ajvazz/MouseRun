@@ -50,6 +50,9 @@ private:
 
     void makeDecisions();
     void focusBest();
+    void drawGenome(Genome* gen);
+
+    QGraphicsView* nnView;
 };
 
 #endif // GAME_H

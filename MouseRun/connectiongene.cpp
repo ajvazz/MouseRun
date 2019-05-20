@@ -5,7 +5,7 @@
 #include <algorithm>
 
 ConnectionGene::ConnectionGene(NodeGene *in, NodeGene *out, double weight, int innovationNumber)
-    : inNode{in}, outNode{out}, weight{weight}, innovationNumber{innovationNumber}
+    : inNode{in}, outNode{out}, weight{weight}, enabled{true}, innovationNumber{innovationNumber}
 {
 }
 

@@ -21,7 +21,9 @@ void NodeGene::activate()
     // nula je
 //    qDebug() << "node activate: " << outputConnections.size();
     for(int i = 0; i < outputConnections.size(); i++) {
-        outputConnections[i]->outNode->inputSum += outputConnections[i]->weight * outputValue;
+        if(outputConnections[i]->enabled){
+            outputConnections[i]->outNode->inputSum += outputConnections[i]->weight * outputValue;
+        }
     }
 }
 
