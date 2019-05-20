@@ -169,7 +169,7 @@ void Species::explicitFitnessSharing()
 void Species::decimateSpecies()
 {
 //    qDebug() << "decimate: " << genomes.size();
-    if (genomes.size() <= 2)
+    if (genomes.size() <= 20)
         return;
 
     // Remove the second (worse) half of the species

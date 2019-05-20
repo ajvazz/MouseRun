@@ -95,6 +95,14 @@ void Game::start()
     nnView->show();
 }
 
+double Game::distanceBetween(QGraphicsItem* a, QGraphicsItem* b){
+
+    double dx = a->pos().x() - b->pos().x();
+    double dy = a->pos().y() - b->pos().y();
+
+    return sqrt(dx*dx + dy*dy);
+}
+
 void Game::makeDecisions()
 {
 
@@ -108,95 +116,138 @@ void Game::makeDecisions()
             inputs.push_back(mice[i]->speed);
             inputs.push_back(mice[i]->rotation());
 
+
+            // Find nearest items
+            Cheese* nearestCheese = nullptr;
+            double dCheese = 0;
+            MouseTrap* nearestTrap = nullptr;
+            double dTrap = 0;
+            WaterPool* nearestPool = nullptr;
+            double dPool = 0;
+            foreach (QGraphicsItem* item, scene->items()) {
+                if(WaterBound* x = dynamic_cast<WaterBound*>(item)) { continue; }
+                else if(Cat* x = dynamic_cast<Cat*>(item)) { continue; }
+                else if(Player* x = dynamic_cast<Player*>(item)) { continue; }
+
+                double d = distanceBetween(mice[i], item);
+
+                if(Cheese* x = dynamic_cast<Cheese*>(item)) {
+                    if( (!nearestCheese || d < dCheese) ){
+                        nearestCheese = x;
+                        dCheese = d;
+                    }
+                }
+                else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {
+                    if( (!nearestTrap || d < dTrap) ){
+                        nearestTrap = x;
+                        dTrap = d;
+                    }
+                }
+                else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {
+                    if( (!nearestPool || d < dPool) ){
+                        nearestPool = x;
+                        dPool = d;
+                    }
+                }
+            }
+
+            inputs.push_back(nearestCheese->pos().x());
+            inputs.push_back(nearestCheese->pos().y());
+            inputs.push_back(nearestTrap->pos().x());
+            inputs.push_back(nearestTrap->pos().y());
+            inputs.push_back(nearestPool->pos().x());
+            inputs.push_back(nearestPool->pos().y());
+
+/*
 //            qDebug() << scene->items().size();
             // Mouse can only see items 1 area ahead (2 x (2 traps, 2 pools, 8 cheese) = 24 items)
-            std::vector<QGraphicsItem*> currentArea;
-            std::vector<QGraphicsItem*> nextArea;
+//            std::vector<QGraphicsItem*> currentArea;
+//            std::vector<QGraphicsItem*> nextArea;
 
-            foreach (QGraphicsItem* item, scene->items()) {
+//            foreach (QGraphicsItem* item, scene->items()) {
 
-                if(WaterBound* x = dynamic_cast<WaterBound*>(item)) { continue; }
-                else if(Cheese* x = dynamic_cast<Cheese*>(item)) {}
-                else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {}
-                else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {}
-                else {
-                    continue;
-                }
+//                if(WaterBound* x = dynamic_cast<WaterBound*>(item)) { continue; }
+//                else if(Cheese* x = dynamic_cast<Cheese*>(item)) {}
+//                else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {}
+//                else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {}
+//                else {
+//                    continue;
+//                }
 
-                double mousePos = mice[i]->pos().y();
-                double itemPos = item->pos().y();
-                double firstAreaStart = int(mousePos / areaH) * areaH + (areaH - bla);
-                double nextAreaStart = firstAreaStart - areaH;
-                double nextAreaEnd = nextAreaStart - areaH;
+//                double mousePos = mice[i]->pos().y();
+//                double itemPos = item->pos().y();
+//                double firstAreaStart = int(mousePos / areaH) * areaH + (areaH - bla);
+//                double nextAreaStart = firstAreaStart - areaH;
+//                double nextAreaEnd = nextAreaStart - areaH;
 
 
-                if(itemPos < firstAreaStart && itemPos > nextAreaStart){
-                    currentArea.push_back(item);
-                }else if(itemPos < nextAreaStart && itemPos > nextAreaEnd){
-                    nextArea.push_back(item);
-                }
-            }
+//                if(itemPos < firstAreaStart && itemPos > nextAreaStart){
+//                    currentArea.push_back(item);
+//                }else if(itemPos < nextAreaStart && itemPos > nextAreaEnd){
+//                    nextArea.push_back(item);
+//                }
+//            }
 
-            if(currentArea.empty()){
-                for(size_t j=0; j<24/*magic*/; j++){
-                    inputs.push_back(0.0);
-                }
-            }
+//            if(currentArea.empty()){
+//                for(size_t j=0; j<24; j++){
+//                    inputs.push_back(0.0);
+//                }
+//            }
 
-//            qDebug() << currentArea.size() << nextArea.size();
+////            qDebug() << currentArea.size() << nextArea.size();
 
-            for(size_t j=0; j<currentArea.size(); j++){
-                if(Cheese* cheese = dynamic_cast<Cheese*>(currentArea[j])){
-                    inputs.push_back(cheese->pos().x());
-                    inputs.push_back(cheese->pos().y());
-//                    inputs.push_back(100);
-//                    qDebug() << "1 cheese: " << j;
-                }
-            }
-            for(size_t j=0; j<currentArea.size(); j++){
-                if(WaterPool* pool = dynamic_cast<WaterPool*>(currentArea[j])){
-                    inputs.push_back(pool->pos().x());
-                    inputs.push_back(pool->pos().y());
-//                    inputs.push_back(-50);
-//                    qDebug() << "1 pool: " << j;
-                }
-            }
-            for(size_t j=0; j<currentArea.size(); j++){
-                if(MouseTrap* trap = dynamic_cast<MouseTrap*>(currentArea[j])){
-                    inputs.push_back(trap->pos().x());
-                    inputs.push_back(trap->pos().y());
-//                    inputs.push_back(-500);
-//                    qDebug() << "1 trap: " << j;
-                }
-            }
+//            for(size_t j=0; j<currentArea.size(); j++){
+//                if(Cheese* cheese = dynamic_cast<Cheese*>(currentArea[j])){
+//                    inputs.push_back(cheese->pos().x());
+//                    inputs.push_back(cheese->pos().y());
+////                    inputs.push_back(100);
+////                    qDebug() << "1 cheese: " << j;
+//                }
+//            }
+//            for(size_t j=0; j<currentArea.size(); j++){
+//                if(WaterPool* pool = dynamic_cast<WaterPool*>(currentArea[j])){
+//                    inputs.push_back(pool->pos().x());
+//                    inputs.push_back(pool->pos().y());
+////                    inputs.push_back(-50);
+////                    qDebug() << "1 pool: " << j;
+//                }
+//            }
+//            for(size_t j=0; j<currentArea.size(); j++){
+//                if(MouseTrap* trap = dynamic_cast<MouseTrap*>(currentArea[j])){
+//                    inputs.push_back(trap->pos().x());
+//                    inputs.push_back(trap->pos().y());
+////                    inputs.push_back(-500);
+////                    qDebug() << "1 trap: " << j;
+//                }
+//            }
 
-            for(size_t j=0; j<nextArea.size(); j++){
-                if(Cheese* cheese = dynamic_cast<Cheese*>(nextArea[j])){
-                    inputs.push_back(cheese->pos().x());
-                    inputs.push_back(cheese->pos().y());
-//                    inputs.push_back(100);
-//                    qDebug() << "2 cheese: " << j;
-                }
-            }
-            for(size_t j=0; j<nextArea.size(); j++){
-                if(WaterPool* pool = dynamic_cast<WaterPool*>(nextArea[j])){
-                    inputs.push_back(pool->pos().x());
-                    inputs.push_back(pool->pos().y());
-//                    inputs.push_back(-50);
-//                    qDebug() << "2 pool: " << j;
-                }
-            }
-            for(size_t j=0; j<nextArea.size(); j++){
-                if(MouseTrap* trap = dynamic_cast<MouseTrap*>(nextArea[j])){
-                    inputs.push_back(trap->pos().x());
-                    inputs.push_back(trap->pos().y());
-//                    inputs.push_back(-500);
-//                    qDebug() << "2 trap: " << j;
-                }
-            }
+//            for(size_t j=0; j<nextArea.size(); j++){
+//                if(Cheese* cheese = dynamic_cast<Cheese*>(nextArea[j])){
+//                    inputs.push_back(cheese->pos().x());
+//                    inputs.push_back(cheese->pos().y());
+////                    inputs.push_back(100);
+////                    qDebug() << "2 cheese: " << j;
+//                }
+//            }
+//            for(size_t j=0; j<nextArea.size(); j++){
+//                if(WaterPool* pool = dynamic_cast<WaterPool*>(nextArea[j])){
+//                    inputs.push_back(pool->pos().x());
+//                    inputs.push_back(pool->pos().y());
+////                    inputs.push_back(-50);
+////                    qDebug() << "2 pool: " << j;
+//                }
+//            }
+//            for(size_t j=0; j<nextArea.size(); j++){
+//                if(MouseTrap* trap = dynamic_cast<MouseTrap*>(nextArea[j])){
+//                    inputs.push_back(trap->pos().x());
+//                    inputs.push_back(trap->pos().y());
+////                    inputs.push_back(-500);
+////                    qDebug() << "2 trap: " << j;
+//                }
+//            }
 
 //            qDebug() << inputs.size();
-
+*/
 
             std::vector<double> outputs = genomes[i]->feedForward(inputs);
             mice[i]->keysDown['w'] = outputs[0] >= 0.5;
@@ -287,44 +338,47 @@ void Game::drawGenome(Genome *gen)
 
     double d = 10;
 
-    double offset = 2*d;
-    double offsetL = 5*d;
+    double offset = 3*d;
+    double offsetL = 10*d;
 
-    std::map<size_t, size_t> layers;
+    std::map<int, std::pair<int, int>> nodes;
+    std::map<int, int> layers;
 
     for (size_t i = 0; i < gen->nodes.size(); i++){
         QGraphicsEllipseItem* node = new QGraphicsEllipseItem(0, 0, d, d);
-        size_t l = gen->nodes[i]->layer;
+        int l = gen->nodes[i]->layer;
+        int id = gen->nodes[i]->id;
+
         if(layers.count(l) == 0){
             layers[l] = 1;
         }else{
             layers[l]++;
         }
 //        qDebug() << l;
-        node->setPos(l * offsetL, layers[l] * offset);
+        nodes[id] = std::make_pair(l * offsetL, layers[l] * offset);
+
+        node->setPos(nodes[id].first, nodes[id].second);
         nnView->scene()->addItem(node);
     }
+    layers.clear();
+//    qDebug() << gen->connections.size();
 
     for(size_t i = 0; i < gen->connections.size(); i++){
 
 
-        size_t n1Layer = gen->connections[i]->inNode->layer;
-        size_t n2Layer = gen->connections[i]->outNode->layer;
+        int n1Id = gen->connections[i]->inNode->id;
+        int n2Id = gen->connections[i]->outNode->id;
+//        qDebug() << gen->connections[i]->inNode->id << gen->connections[i]->outNode->id;
 
-        double n1x = n1Layer * offsetL;
-        double n1y = layers[n1Layer] * offset;
-        double n2x = n2Layer * offsetL;
-        double n2y = layers[n2Layer] * offset;
-
-        int r = 0;
-        int g = 0;
-        int b = 0;
+        double r = 0;
+        double g = 0;
+        double b = 0;
 
 
         if(gen->connections[i]->enabled){
 
             double w = gen->connections[i]->weight;
-            if(w > 0){
+            if(w >= 0){
                 g = w * 255;
             }else{
                 r = -w * 255;
@@ -334,10 +388,10 @@ void Game::drawGenome(Genome *gen)
         }
 
         QColor color(r,g,b);
-        nnView->scene()->addLine(n1x + d/2, n1y + d/2, n2x + d/2, n2y + d/2, QPen(color));
+        nnView->scene()->addLine(nodes[n1Id].first + d/2, nodes[n1Id].second + d/2,
+                                 nodes[n2Id].first + d/2, nodes[n2Id].second + d/2, QPen(color));
     }
 
-    layers.clear();
     nnView->scene()->setSceneRect(nnView->scene()->itemsBoundingRect());
     nnView->fitInView(nnView->scene()->sceneRect(), Qt::KeepAspectRatio);
 }

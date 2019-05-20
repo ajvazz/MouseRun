@@ -4,11 +4,11 @@
 #include <QTime>
 #include <QDebug>
 
-const int populationSize = 2500;
+const int populationSize = 1000;
 const int batchSize = 100;
 
 // number of inputs and outputs for the genome (nn)
-const int numInputs = 52;
+const int numInputs = 10;
 const int numOutputs = 4;
 
 Controller::Controller()
@@ -200,7 +200,6 @@ void Controller::evolve()
     // mutate...
     for(size_t i = 0; i < populationSize; i++) {
 //        qDebug() << "petlja: mutate: " << i;
-        population[i]->connectNodes();
         population[i]->mutate();
     }
 

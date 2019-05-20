@@ -64,6 +64,7 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
 
 void Genome::mutate()
 {
+    connectNodes();
 //    qDebug() << "mutate genome";
 //    qDebug() << "mutate: " << connections.size();
     std::random_device rd;
@@ -106,6 +107,7 @@ void Genome::mutate()
             addNode();
         }
     }
+    connectNodes();
 }
 
 void Genome::addNode()
@@ -211,6 +213,8 @@ void Genome::addConnection()
         toNode = nodes[dist(gen)];
     }
 
+//    qDebug() << "From " << fromNode->id << " To " << toNode->id;
+
     // swap if needed
     if(fromNode->layer > toNode->layer) {
         std::swap(fromNode, toNode);
@@ -243,7 +247,7 @@ Genome* Genome::crossover(Genome *other)
 
     for(auto&& c1 : connections) {
         int index = -1;
-        for(int i = 0; i < other->connections.size(); i++) {
+        for(size_t i = 0; i < other->connections.size(); i++) {
             if(c1->innovationNumber == other->connections[i]->innovationNumber) {
                 index = i;
             }
@@ -324,11 +328,11 @@ Genome *Genome::clone()
 
 void Genome::connectNodes()
 {
-    for(int i = 0; i < nodes.size(); i++) {
+    for(size_t i = 0; i < nodes.size(); i++) {
         nodes[i]->outputConnections.clear();
     }
 
-    for(int i = 0; i < connections.size(); i++) {
+    for(size_t i = 0; i < connections.size(); i++) {
         connections[i]->inNode->outputConnections.push_back(connections[i]);
     }
 }

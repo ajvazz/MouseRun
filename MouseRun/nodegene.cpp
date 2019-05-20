@@ -20,7 +20,7 @@ void NodeGene::activate()
 
     // nula je
 //    qDebug() << "node activate: " << outputConnections.size();
-    for(int i = 0; i < outputConnections.size(); i++) {
+    for(size_t i = 0; i < outputConnections.size(); i++) {
         if(outputConnections[i]->enabled){
             outputConnections[i]->outNode->inputSum += outputConnections[i]->weight * outputValue;
         }
@@ -30,7 +30,7 @@ void NodeGene::activate()
 // returns true if this node is connected to other node
 bool NodeGene::isConnectedTo(NodeGene *other)
 {
-    for(int i = 0; i < outputConnections.size(); i++) {
+    for(size_t i = 0; i < outputConnections.size(); i++) {
 //        qDebug() << outputConnections[i]->outNode->id;
         if(outputConnections[i]->outNode->id == other->id) {
             return true;

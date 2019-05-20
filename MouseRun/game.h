@@ -53,6 +53,7 @@ private:
     void drawGenome(Genome* gen);
 
     QGraphicsView* nnView;
+    double distanceBetween(QGraphicsItem *a, QGraphicsItem *b);
 };
 
 #endif // GAME_H
