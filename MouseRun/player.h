@@ -37,8 +37,12 @@ public:
     QMap<char, bool> keysDown;
     bool alive;
 
-
+    int advanceBonus;
     double calcFitness();
+
+    QRectF fieldOfVisionForward() const;
+    QRectF fieldOfVisionLeft() const;
+    QRectF fieldOfVisionRight() const;
 
 private:
 

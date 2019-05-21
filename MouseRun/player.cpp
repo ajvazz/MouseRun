@@ -21,12 +21,18 @@ Player::Player()
       rotated{0},
       spentInWater{0},
       cheeseEaten{0},
-      alive{true},
       speed{5},
-      // Pick random colors for ears and body
-      color{QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)},
-      color2{QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)},
-      inWater{false}
+      alive{true},
+      advanceBonus{0},
+      inWater{false},
+      color{QRandomGenerator::global()->bounded(256),
+            QRandomGenerator::global()->bounded(256),
+            QRandomGenerator::global()->bounded(256)
+            },
+      color2{QRandomGenerator::global()->bounded(256),
+             QRandomGenerator::global()->bounded(256),
+             QRandomGenerator::global()->bounded(256)
+             }
 {
     keysDown['w'] = false;
     keysDown['a'] = false;
@@ -52,6 +58,21 @@ QRectF Player::boundingRect() const
                   36 + adjust, 60 + adjust);
 }
 
+QRectF Player::fieldOfVisionForward() const
+{
+    return QRectF(-20, -70, 40, 70);
+}
+
+QRectF Player::fieldOfVisionLeft() const
+{
+    return QRectF(-60, -50, 40, 50);
+}
+
+QRectF Player::fieldOfVisionRight() const
+{
+    return QRectF(20, -50, 40, 50);
+}
+
 // Taken from the CollidingMice example
 QPainterPath Player::shape() const
 {
@@ -64,6 +85,10 @@ QPainterPath Player::shape() const
 void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     painter->setRenderHint(QPainter::Antialiasing);
+
+//    painter->drawRect(fieldOfVisionForward());
+//    painter->drawRect(fieldOfVisionLeft());
+//    painter->drawRect(fieldOfVisionRight());
 
     // Body
     painter->setBrush(color);
@@ -132,19 +157,28 @@ double Player::calcFitness()
 {
     double fitness = 0;
 
-    fitness += cheeseEaten * 50;
+//    fitness += advanceBonus;
+    fitness += cheeseEaten * 10;
     fitness -= spentInWater * 10;
-    fitness += traveled * 10;
-    fitness += rotated * 10;
+    fitness += traveled / 10;
+    fitness += rotated;
 
-    // penalty for being an idiot
-//    if(!traveled){
-//        fitness = -5000;
-//    }
+    if(!spentInWater){
+        advanceBonus *= 2;
+    }
+    if(cheeseEaten){
+        advanceBonus *= 2;
+    }
+    if(traveled){
+        fitness += rotated * 10;
+        advanceBonus *= 2;
+    }
+    if(rotated){
+        fitness += traveled;
+        advanceBonus *= 2;
+    }
 
-//    if(!rotated){
-//        fitness -= 5000;
-//    }
+    fitness += advanceBonus;
 
     return fitness;
 }
@@ -232,6 +266,10 @@ void Player::update()
             inWater = true;
             spentInWater++;
         }
+    }
+
+    if(!inWater){
+        advanceBonus++;
     }
 
     move();

@@ -77,7 +77,7 @@ void Genome::mutate()
     double nodeProb = 0.05;
 
     if(r < weightsProb) {
-        // 75% - weights mutation
+        // 80% - weights mutation
 //        qDebug() << "weights mutation";
         // Add connection if no connections exist
         if(connections.empty()) {
@@ -87,7 +87,7 @@ void Genome::mutate()
             conn->mutateWeight();
         }
     } else if(r < weightsProb + connectionProb) {
-        // 15% - new connection
+        // 10% - new connection
 //        qDebug() << "addConnection mutation";
         addConnection();
         // 10% X (50%)^N to add N connections
