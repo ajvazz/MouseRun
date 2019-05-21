@@ -46,6 +46,7 @@ Game::Game(std::vector<Genome*> genomes, unsigned bId)
     nnView->setScene(new QGraphicsScene(nnView));
 //    nnView->setSceneRect(0, 0, 300, 800);
     nnView->setRenderHint(QPainter::Antialiasing);
+    nnView->move(800, 0);
     // Start the game
     start();
 }
@@ -425,7 +426,8 @@ void Game::update()
 
 void Game::focusBest(){
 
-    setSceneRect(mice[bestI]->sceneBoundingRect());
+    // sceneWidth = 600, sceneHeight = 800
+    setSceneRect(-300, mice[bestI]->y() - 400, 600, 800);
 }
 
 void Game::drawGenome(Genome *gen)
