@@ -19,8 +19,6 @@ Player::Player()
       angle{0},
       traveled{0},
       rotated{0},
-      spentInWater{0},
-      cheeseEaten{0},
       speed{5},
       alive{true},
       advanceBonus{0},
@@ -157,30 +155,17 @@ double Player::calcFitness()
 {
     double fitness = 0;
 
-//    fitness += advanceBonus;
-    fitness += cheeseEaten * 10;
-    fitness -= spentInWater * 10;
-    fitness += traveled / 10;
-    fitness += rotated;
+    if(!rotated){
+        advanceBonus -= 500;
+    }else{
+        advanceBonus += rotated;
+    }
 
-    if(!spentInWater){
-        advanceBonus *= 2;
-    }
-    if(cheeseEaten){
-        advanceBonus *= 2;
-    }
     if(traveled){
-        fitness += rotated * 10;
-        advanceBonus *= 2;
-    }
-    if(rotated){
-        fitness += traveled;
-        advanceBonus *= 2;
+        fitness = advanceBonus + traveled;
     }
 
-    fitness += advanceBonus;
-
-    return fitness;
+    return fitness >= 0 ? fitness : 0;
 }
 
 
@@ -194,6 +179,7 @@ void Player::move()
             newPos = mapToParent(0, -1);
         }else{
             newPos = mapToParent(0, -speed);
+            advanceBonus++;
             traveled += speed;
         }
 
@@ -205,7 +191,6 @@ void Player::move()
             newPos = mapToParent(0, -1);
         }else{
             newPos = mapToParent(0, speed/2);
-            traveled += speed/2;
         }
         setPos(newPos.x(), newPos.y());
     }
@@ -252,7 +237,7 @@ void Player::update()
 
         // If the item is a cheese, eat it
         if(Cheese *cheese = dynamic_cast<Cheese*>(item)){
-            cheeseEaten++;
+            advanceBonus++;
             speed = maxSpeed;
 //          cheese->deleteLater();
         }
@@ -264,12 +249,8 @@ void Player::update()
 
         else if(dynamic_cast<WaterPool*>(item)){
             inWater = true;
-            spentInWater++;
+            advanceBonus--;
         }
-    }
-
-    if(!inWater){
-        advanceBonus++;
     }
 
     move();

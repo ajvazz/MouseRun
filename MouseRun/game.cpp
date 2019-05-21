@@ -1,4 +1,4 @@
-#include "game.h"
+﻿#include "game.h"
 
 #include "cheese.h"
 #include "mousetrap.h"
@@ -113,25 +113,33 @@ void Game::makeDecisions()
             std::vector<double> inputs;
             inputs.push_back(mice[i]->pos().x());
             inputs.push_back(mice[i]->pos().y());
-//            inputs.push_back(mice[i]->speed);
+            inputs.push_back(mice[i]->speed);
             inputs.push_back(mice[i]->rotation());
 
-            QList<QGraphicsItem*> visibleFront = scene->items(mice[i]->mapRectToScene(mice[i]->fieldOfVisionForward()));
-            QList<QGraphicsItem*> visibleLeft = scene->items(mice[i]->mapRectToScene(mice[i]->fieldOfVisionLeft()));
-            QList<QGraphicsItem*> visibleRight = scene->items(mice[i]->mapRectToScene(mice[i]->fieldOfVisionRight()));
+// INPUTS V3
+
+            QList<QGraphicsItem*> visibleFront = scene->items(mice[i]->mapRectToScene(mice[i]->fieldOfVisionForward()),
+                                                              Qt::IntersectsItemShape, Qt::AscendingOrder);
+            QList<QGraphicsItem*> visibleLeft = scene->items(mice[i]->mapRectToScene(mice[i]->fieldOfVisionLeft()),
+                                                             Qt::IntersectsItemShape, Qt::AscendingOrder);
+            QList<QGraphicsItem*> visibleRight = scene->items(mice[i]->mapRectToScene(mice[i]->fieldOfVisionRight()),
+                                                              Qt::IntersectsItemShape, Qt::AscendingOrder);
 
             foreach (QGraphicsItem* item, visibleFront) {
                 if(Cheese* x = dynamic_cast<Cheese*>(item)) {
 //                  qDebug() << "CHEESE";
                     inputs.push_back(100);
+                    mice[i]->advanceBonus++;
                 }
                 else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {
 //                  qDebug() << "TRAP";
                     inputs.push_back(-100);
+                    mice[i]->advanceBonus--;
                 }
                 else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {
 //                  qDebug() << "POOL";
                     inputs.push_back(-1);
+                    mice[i]->advanceBonus--;
                 }
                 else {
                     continue;
@@ -148,10 +156,12 @@ void Game::makeDecisions()
                 else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {
 //                  qDebug() << "TRAP";
                     inputs.push_back(-100);
+                    mice[i]->advanceBonus++;
                 }
                 else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {
 //                  qDebug() << "POOL";
                     inputs.push_back(-1);
+                    mice[i]->advanceBonus++;
                 }
                 else {
                     continue;
@@ -169,10 +179,12 @@ void Game::makeDecisions()
                 else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {
 //                  qDebug() << "TRAP";
                     inputs.push_back(-100);
+                    mice[i]->advanceBonus++;
                 }
                 else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {
 //                  qDebug() << "POOL";
                     inputs.push_back(-1);
+                    mice[i]->advanceBonus++;
                 }
                 else {
                     continue;
@@ -188,6 +200,7 @@ void Game::makeDecisions()
             }
 
 
+// INPUTS V2
 /*
 //            // Find nearest items
 //            Cheese* nearestCheese = nullptr;
@@ -231,7 +244,8 @@ void Game::makeDecisions()
 //            inputs.push_back(nearestPool->pos().y());
 */
 
-            /*
+// INPUTS V1
+/*
 //            qDebug() << scene->items().size();
 //             Mouse can only see items 1 area ahead (2 x (2 traps, 2 pools, 8 cheese) = 24 items)
             std::vector<QGraphicsItem*> currentArea;
@@ -326,10 +340,10 @@ void Game::makeDecisions()
 //                    qDebug() << "2 trap: " << j;
                 }
             }
-
+*/
 //            qDebug() << inputs.size();
 
-*/
+//OUTPUTS
 
 
             std::vector<double> outputs = genomes[i]->feedForward(inputs);
@@ -343,7 +357,6 @@ void Game::makeDecisions()
 
 void Game::update()
 {
-
     //    qDebug() << bestI;
 
     // check for dead mice, determine best mouse
@@ -471,9 +484,22 @@ void Game::drawGenome(Genome *gen)
             b = 255;
         }
 
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dist(-d/2, d/2);
+
+        double o1 = dist(gen);
+        double o2 = dist(gen);
+        double o3 = dist(gen);
+        double o4 = dist(gen);
+
         QColor color(r,g,b);
-        nnView->scene()->addLine(nodes[n1Id].first + d/2, nodes[n1Id].second + d/2,
-                                 nodes[n2Id].first + d/2, nodes[n2Id].second + d/2, QPen(color));
+//        nnView->scene()->addLine(nodes[n1Id].first + d/2, nodes[n1Id].second + d/2,
+//                                 nodes[n2Id].first + d/2, nodes[n2Id].second + d/2, QPen(color));
+
+
+        nnView->scene()->addLine(nodes[n1Id].first + o1 + d/2, nodes[n1Id].second + o2 + d/2,
+                                 nodes[n2Id].first + o3 + d/2, nodes[n2Id].second + o4 + d/2, QPen(color));
     }
 
     nnView->scene()->setSceneRect(nnView->scene()->itemsBoundingRect());

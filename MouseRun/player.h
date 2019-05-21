@@ -28,9 +28,6 @@ public:
 
     double traveled;
     double rotated;
-    double spentInWater;
-    double cheeseEaten;
-
 
     qreal speed;    // How fast can the player move
 

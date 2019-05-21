@@ -155,7 +155,7 @@ Genome* Species::selectParent()
 
     // This will never execute, but return value must exist. Pick a random Genome
     std::uniform_real_distribution<> dist1(0, genomes.size()-1);
-//    qDebug() << "selectParent: fitness";
+    qDebug() << "Something is very wrong with select parent...";
     return genomes[static_cast<size_t>(dist1(gen))];
 }
 

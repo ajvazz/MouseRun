@@ -72,12 +72,11 @@ void Genome::mutate()
     std::uniform_real_distribution<> dist(0, 1);
     double r = dist(gen);
 
-    double weightsProb = 0.75;
-    double connectionProb = 0.15;;
-    double nodeProb = 0.05;
+    double weightsProb = 0.8;
+    double connectionProb = 0.05;;
+    double nodeProb = 0.03;
 
     if(r < weightsProb) {
-        // 80% - weights mutation
 //        qDebug() << "weights mutation";
         // Add connection if no connections exist
         if(connections.empty()) {
@@ -87,25 +86,11 @@ void Genome::mutate()
             conn->mutateWeight();
         }
     } else if(r < weightsProb + connectionProb) {
-        // 10% - new connection
 //        qDebug() << "addConnection mutation";
         addConnection();
-        // 10% X (50%)^N to add N connections
-        while(dist(gen) < 0.5){
-            addConnection();
-        }
     } else if(r < weightsProb + connectionProb + nodeProb) {
 //        qDebug() << "addNode mutation";
-        // 5% X (50%)^N to add N connections
-        while(dist(gen) < 0.5){
-            addConnection();
-        }
-        // 5% - new node
         addNode();
-        // 5% X (25%)^N to add N nodes
-        while(dist(gen) < 0.25){
-            addNode();
-        }
     }
     connectNodes();
 }
@@ -180,6 +165,26 @@ void Genome::addNode()
 
 void Genome::addConnection()
 {
+    // Check if a new connection is possible
+    bool possible = false;
+    for(size_t i = 0; i < nodes.size(); i++){
+        for(size_t j = i+1; j < nodes.size(); j++){
+            if(nodes[i]->layer != nodes[j]->layer && !nodes[i]->isConnectedTo(nodes[j]) && !nodes[j]->isConnectedTo(nodes[i])){
+                    possible = true;
+                    break;
+            }
+        }
+        if(possible){
+            break;
+        }
+    }
+    // and if not, add a new node
+    if(!possible){
+        addNode();
+        return;
+    }
+
+
 //    qDebug() << "fja: addConnection" << connections.size();
 //    for(size_t i = 0; i < nodes.size(); i++) {
 //        qDebug() << nodes[i]->outputConnections.size();
@@ -246,6 +251,22 @@ Genome* Genome::crossover(Genome *other)
     }
 
     for(auto&& c1 : connections) {
+        NodeGene *childInNode = nullptr;
+        NodeGene *childOutNode = nullptr;
+
+        for(size_t z = 0; z < child->nodes.size(); z++){
+            if(child->nodes[z]->id == c1->inNode->id){
+                childInNode = child->nodes[z];
+            }else if(child->nodes[z]->id == c1->outNode->id){
+                childOutNode = child->nodes[z];
+            }
+        }
+
+        if(!childInNode || !childOutNode){
+            qDebug() << "Something is very wrong with this child...";
+            continue; // This should never happen
+        }
+
         int index = -1;
         for(size_t i = 0; i < other->connections.size(); i++) {
             if(c1->innovationNumber == other->connections[i]->innovationNumber) {
@@ -269,13 +290,14 @@ Genome* Genome::crossover(Genome *other)
                 }
             }
 
+
             if(dist(gen) < 0.5) {
-                ConnectionGene *childConnection = new ConnectionGene(c1->inNode, c1->outNode, c1->weight, c1->innovationNumber);
+                ConnectionGene *childConnection = new ConnectionGene(childInNode, childOutNode, c1->weight, c1->innovationNumber);
                 childConnection->enabled = enable;
                 child->connections.push_back(childConnection);
             } else {
                 ConnectionGene *childConnection = new ConnectionGene
-                                                (other->connections[index]->inNode, other->connections[index]->outNode,
+                                                (childInNode, childOutNode,
                                                other->connections[index]->weight, other->connections[index]->innovationNumber);
                 childConnection->enabled = enable;
                 child->connections.push_back(childConnection);
@@ -284,7 +306,7 @@ Genome* Genome::crossover(Genome *other)
         } else {
             // excess or disjoint gene - inherit from the more fit parent - this parent
 
-            ConnectionGene *childConnection = new ConnectionGene(c1->inNode, c1->outNode, c1->weight, c1->innovationNumber);
+            ConnectionGene *childConnection = new ConnectionGene(childInNode, childOutNode, c1->weight, c1->innovationNumber);
             childConnection->enabled = c1->enabled;
             child->connections.push_back(childConnection);
         }
@@ -310,12 +332,32 @@ Genome *Genome::clone()
     genome->biasNodeId = biasNodeId;
 //    genome->connections = connections;
     for(size_t i = 0; i < connections.size(); i++){
-        genome->connections.push_back(new ConnectionGene(connections[i]->inNode,
-                                                         connections[i]->outNode,
-                                                         connections[i]->weight,
-                                                         connections[i]->innovationNumber));
 
-        genome->connections[i]->enabled = connections[i]->enabled;
+        NodeGene *cloneInNode = nullptr;
+        NodeGene *cloneOutNode = nullptr;
+
+        for(size_t z = 0; z < genome->nodes.size(); z++){
+            if(genome->nodes[z]->id == connections[i]->inNode->id){
+                cloneInNode = genome->nodes[z];
+            }else if(genome->nodes[z]->id == connections[i]->outNode->id){
+                cloneOutNode = genome->nodes[z];
+            }
+        }
+        if(cloneInNode && cloneOutNode){
+
+            ConnectionGene* con = new ConnectionGene(cloneInNode,
+                                                     cloneOutNode,
+                                                     connections[i]->weight,
+                                                     connections[i]->innovationNumber);
+
+
+            con->enabled = connections[i]->enabled;
+            genome->connections.push_back(con);
+        }else{
+            qDebug() << "Something is very wrong with this clone...";
+            continue; // This should never happen
+        }
+
 
     }
 
