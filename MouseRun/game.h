@@ -46,12 +46,14 @@ private:
     QGraphicsView* nnView;
     double distanceBetween(QGraphicsItem *a, QGraphicsItem *b);
 
-private slots:
-    void update();
+
     void spawnObjects();
     void deleteObjects();
     void focusBest();
     void makeDecisions();
+
+private slots:
+    void update();
 
 };
 

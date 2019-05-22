@@ -4,7 +4,7 @@
 #include <QTime>
 #include <QDebug>
 
-const int populationSize = 1000;
+const int populationSize = 1500;
 const int batchSize = 100;
 
 // number of inputs and outputs for the genome (nn)
