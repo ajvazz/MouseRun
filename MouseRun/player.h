@@ -32,14 +32,15 @@ public:
     qreal speed;    // How fast can the player move
 
     QMap<char, bool> keysDown;
+    int advanceBonus;
     bool alive;
 
-    int advanceBonus;
     double calcFitness();
 
     QRectF fieldOfVisionForward() const;
     QRectF fieldOfVisionLeft() const;
     QRectF fieldOfVisionRight() const;
+
 
 private:
 
@@ -51,10 +52,10 @@ private:
     QColor color;   // Color of the mouse body
     QColor color2;  // Color of the mouse ears
 
+    void move();
 
 private slots:
-    void move();    // Slot that moves the player
-    void update(); // Slot that updates the player
+    void update();
 };
 
 #endif // PLAYER_H

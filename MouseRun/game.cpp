@@ -46,7 +46,8 @@ Game::Game(std::vector<Genome*> genomes, unsigned bId)
     nnView->setScene(new QGraphicsScene(nnView));
 //    nnView->setSceneRect(0, 0, 300, 800);
     nnView->setRenderHint(QPainter::Antialiasing);
-    nnView->move(800, 0);
+    nnView->move(600, 0);
+    move(0,0);
     // Start the game
     start();
 }
@@ -58,6 +59,7 @@ void Game::start()
         mice[i]->setPos(QRandomGenerator::global()->bounded(-200,200)
                         , -300);
         scene->addItem(mice[i]);
+
     }
 
     // Spawn cat
@@ -70,13 +72,26 @@ void Game::start()
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(update()));
     updateTimer.start(15);
 
+
+    static QTimer deleteTimer;
+    connect(&deleteTimer, SIGNAL(timeout()), this, SLOT(deleteObjects()));
+    deleteTimer.start(1000);
+
+//    static QTimer focusTimer;
+//    connect(&focusTimer, SIGNAL(timeout()), this, SLOT(focusBest()));
+//    focusTimer.start(100);
+
+    static QTimer thinkTimer;
+    connect(&thinkTimer, SIGNAL(timeout()), this, SLOT(makeDecisions()));
+    thinkTimer.start(50);
+
     // Setup left and right bound
     boundW = 500;
-    leftBound  = new WaterBound(15000, boundW);
-    rightBound = new WaterBound(15000, boundW);
+    leftBound  = new WaterBound(1500, boundW);
+    rightBound = new WaterBound(1500, boundW);
 
-    leftBound->setPos(-boundW, 0);
-    rightBound->setPos(boundW, 0);
+    leftBound->setPos(-boundW, -300);
+    rightBound->setPos(boundW, -300);
 
     scene->addItem(leftBound);
     scene->addItem(rightBound);
@@ -112,10 +127,11 @@ void Game::makeDecisions()
         if(mice[i] != nullptr && mice[i]->alive){
             // feed forward...
             std::vector<double> inputs;
-            inputs.push_back(mice[i]->pos().x());
-            inputs.push_back(mice[i]->pos().y());
-            inputs.push_back(mice[i]->speed);
-            inputs.push_back(mice[i]->rotation());
+
+            inputs.push_back(mice[i]->pos().x() / 200);
+            inputs.push_back(mice[i]->pos().y() / 300);
+            inputs.push_back(std::fmod(mice[i]->rotation(), 360) / 360);
+
 
 // INPUTS V3
 
@@ -129,69 +145,62 @@ void Game::makeDecisions()
             foreach (QGraphicsItem* item, visibleFront) {
                 if(Cheese* x = dynamic_cast<Cheese*>(item)) {
 //                  qDebug() << "CHEESE";
-                    inputs.push_back(100);
-                    mice[i]->advanceBonus++;
+                    inputs.push_back(10);
                 }
                 else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {
 //                  qDebug() << "TRAP";
-                    inputs.push_back(-100);
-                    mice[i]->advanceBonus--;
+                    inputs.push_back(-10);
                 }
                 else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {
 //                  qDebug() << "POOL";
-                    inputs.push_back(-1);
-                    mice[i]->advanceBonus--;
+                    inputs.push_back(-2);
                 }
                 else {
                     continue;
                 }
-                inputs.push_back(item->pos().x());
-                inputs.push_back(item->pos().y());
+                inputs.push_back(item->pos().x() / 200);
+                inputs.push_back(item->pos().y() / 300);
                 break;
             }
             foreach (QGraphicsItem* item, visibleLeft) {
                 if(Cheese* x = dynamic_cast<Cheese*>(item)) {
 //                  qDebug() << "CHEESE";
-                    inputs.push_back(100);
+                    inputs.push_back(10);
                 }
                 else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {
 //                  qDebug() << "TRAP";
-                    inputs.push_back(-100);
-                    mice[i]->advanceBonus++;
+                    inputs.push_back(-10);
                 }
                 else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {
 //                  qDebug() << "POOL";
-                    inputs.push_back(-1);
-                    mice[i]->advanceBonus++;
+                    inputs.push_back(-2);
                 }
                 else {
                     continue;
                 }
-                inputs.push_back(item->pos().x());
-                inputs.push_back(item->pos().y());
+                inputs.push_back(item->pos().x() / 200);
+                inputs.push_back(item->pos().y() / 300);
                 break;
             }
 
             foreach (QGraphicsItem* item, visibleRight) {
                 if(Cheese* x = dynamic_cast<Cheese*>(item)) {
 //                  qDebug() << "CHEESE";
-                    inputs.push_back(100);
+                    inputs.push_back(10);
                 }
                 else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {
 //                  qDebug() << "TRAP";
-                    inputs.push_back(-100);
-                    mice[i]->advanceBonus++;
+                    inputs.push_back(-10);
                 }
                 else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {
 //                  qDebug() << "POOL";
-                    inputs.push_back(-1);
-                    mice[i]->advanceBonus++;
+                    inputs.push_back(-2);
                 }
                 else {
                     continue;
                 }
-                inputs.push_back(item->pos().x());
-                inputs.push_back(item->pos().y());
+                inputs.push_back(item->pos().x() / 200);
+                inputs.push_back(item->pos().y() / 300);
                 break;
             }
 
@@ -199,7 +208,6 @@ void Game::makeDecisions()
             while(inputs.size() < 12){
                 inputs.push_back(0);
             }
-
 
 // INPUTS V2
 /*
@@ -237,22 +245,22 @@ void Game::makeDecisions()
 //                }
 //            }
 
-//            inputs.push_back(nearestCheese->pos().x());
-//            inputs.push_back(nearestCheese->pos().y());
-//            inputs.push_back(nearestTrap->pos().x());
-//            inputs.push_back(nearestTrap->pos().y());
-//            inputs.push_back(nearestPool->pos().x());
-//            inputs.push_back(nearestPool->pos().y());
+//            inputs.push_back(nearestCheese->pos().x() / 200);
+//            inputs.push_back(nearestCheese->pos().y() / 300);
+//            inputs.push_back(nearestTrap->pos().x() / 200);
+//            inputs.push_back(nearestTrap->pos().y() / 300);
+//            inputs.push_back(nearestPool->pos().x() / 200);
+//            inputs.push_back(nearestPool->pos().y() / 300);
 */
 
 // INPUTS V1
-/*
+            /*
 //            qDebug() << scene->items().size();
 //             Mouse can only see items 1 area ahead (2 x (2 traps, 2 pools, 8 cheese) = 24 items)
             std::vector<QGraphicsItem*> currentArea;
             std::vector<QGraphicsItem*> nextArea;
 
-            foreach (QGraphicsItem* item, scene->items()) {
+            foreach (QGraphicsItem* item, scene->items(Qt::AscendingOrder)) {
 
                 if(WaterBound* x = dynamic_cast<WaterBound*>(item)) { continue; }
                 else if(Cheese* x = dynamic_cast<Cheese*>(item)) {}
@@ -284,62 +292,18 @@ void Game::makeDecisions()
 
 //            qDebug() << currentArea.size() << nextArea.size();
 
-
-            std::sort(currentArea.begin(), currentArea.end(),
-                      [this, i] (QGraphicsItem* a, QGraphicsItem* b) {
-                return distanceBetween(a, mice[i]) < distanceBetween(b, mice[i]);});
-            std::sort(nextArea.begin(), nextArea.end(),
-                      [this, i] (QGraphicsItem* a, QGraphicsItem* b) {
-                return distanceBetween(a, mice[i]) < distanceBetween(b, mice[i]);});
-
             for(size_t j=0; j<currentArea.size(); j++){
-                if(Cheese* cheese = dynamic_cast<Cheese*>(currentArea[j])){
-                    inputs.push_back(cheese->pos().x());
-                    inputs.push_back(cheese->pos().y());
-//                    inputs.push_back(100);
-//                    qDebug() << "1 cheese: " << j;
-                }
-            }
-            for(size_t j=0; j<currentArea.size(); j++){
-                if(WaterPool* pool = dynamic_cast<WaterPool*>(currentArea[j])){
-                    inputs.push_back(pool->pos().x());
-                    inputs.push_back(pool->pos().y());
-//                    inputs.push_back(-50);
-//                    qDebug() << "1 pool: " << j;
-                }
-            }
-            for(size_t j=0; j<currentArea.size(); j++){
-                if(MouseTrap* trap = dynamic_cast<MouseTrap*>(currentArea[j])){
-                    inputs.push_back(trap->pos().x());
-                    inputs.push_back(trap->pos().y());
-//                    inputs.push_back(-500);
-//                    qDebug() << "1 trap: " << j;
-                }
+                double itemX = currentArea[j]->pos().x() / 200;
+                double itemY = currentArea[j]->pos().y() / 200;
+                inputs.push_back(itemX);
+                inputs.push_back(itemY);
             }
 
             for(size_t j=0; j<nextArea.size(); j++){
-                if(Cheese* cheese = dynamic_cast<Cheese*>(nextArea[j])){
-                    inputs.push_back(cheese->pos().x());
-                    inputs.push_back(cheese->pos().y());
-//                    inputs.push_back(100);
-//                    qDebug() << "2 cheese: " << j;
-                }
-            }
-            for(size_t j=0; j<nextArea.size(); j++){
-                if(WaterPool* pool = dynamic_cast<WaterPool*>(nextArea[j])){
-                    inputs.push_back(pool->pos().x());
-                    inputs.push_back(pool->pos().y());
-//                    inputs.push_back(-50);
-//                    qDebug() << "2 pool: " << j;
-                }
-            }
-            for(size_t j=0; j<nextArea.size(); j++){
-                if(MouseTrap* trap = dynamic_cast<MouseTrap*>(nextArea[j])){
-                    inputs.push_back(trap->pos().x());
-                    inputs.push_back(trap->pos().y());
-//                    inputs.push_back(-500);
-//                    qDebug() << "2 trap: " << j;
-                }
+                double itemX = nextArea[j]->pos().x() / 200;
+                double itemX = nextArea[j]->pos().y() / 300;
+                inputs.push_back(itemX);
+                inputs.push_back(itemY);
             }
 */
 //            qDebug() << inputs.size();
@@ -362,10 +326,14 @@ void Game::update()
 
     // check for dead mice, determine best mouse
     for(size_t i = 0; i < mice.size(); i++){
-        if(!mice[i]){
-            continue;
+
+        if(!mice[i]) { continue; }
+
+        if(mice[i]->pos().y() >= cat->pos().y()){
+            mice[i]->alive = false;
         }
-        else if (!mice[i]->alive){
+
+        if (!mice[i]->alive){
             // A player died
 //            qDebug() << "time" << time.elapsed();
 
@@ -380,6 +348,13 @@ void Game::update()
             if(!mice[bestI] || mice[i]->pos().y() < mice[bestI]->pos().y()){
                 bestI = i;
                 drawGenome(genomes[bestI]);
+
+            }
+
+            double p = mice[bestI]->pos().y();
+            if (leftBound->pos().y() > p + 600) {
+                leftBound->setPos(leftBound->pos().x(), p);
+                rightBound->setPos(rightBound->pos().x(), p);
             }
         }
     }
@@ -402,26 +377,16 @@ void Game::update()
     // Move the cat == move everything else
     foreach (QGraphicsItem* item, scene->items()) {
         if(Cat *cat = dynamic_cast<Cat*>(item)) continue;
+        if(WaterBound *b = dynamic_cast<WaterBound*>(item)) continue;
         item->setPos(item->pos().x(), item->pos().y() + cat->speed);
     }
 
-    // Water bound is moving with player
-    // If you don't know why 200, enter scene height (=600) or similar, see what happens
-    if (leftBound->pos().y() > 200) {
-        leftBound->setPos(leftBound->pos().x(), 0);
-        rightBound->setPos(rightBound->pos().x(), 0);
-    }
-    // If mouse mouse goes backward, move water bound below
-    if (leftBound->pos().y() < -200) {
-        leftBound->setPos(leftBound->pos().x(), 0);
-        rightBound->setPos(rightBound->pos().x(), 0);
-    }
 
     // run game normaly
-    focusBest();
     spawnObjects();
-    deleteObjects();
-    makeDecisions();
+//    deleteObjects();
+    focusBest();
+//    makeDecisions();
 }
 
 void Game::focusBest(){
@@ -486,22 +451,22 @@ void Game::drawGenome(Genome *gen)
             b = 255;
         }
 
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_real_distribution<> dist(-d/2, d/2);
+//        std::random_device rd;
+//        std::mt19937 gen(rd());
+//        std::uniform_real_distribution<> dist(-d/2, d/2);
 
-        double o1 = dist(gen);
-        double o2 = dist(gen);
-        double o3 = dist(gen);
-        double o4 = dist(gen);
+//        double o1 = dist(gen);
+//        double o2 = dist(gen);
+//        double o3 = dist(gen);
+//        double o4 = dist(gen);
 
         QColor color(r,g,b);
-//        nnView->scene()->addLine(nodes[n1Id].first + d/2, nodes[n1Id].second + d/2,
-//                                 nodes[n2Id].first + d/2, nodes[n2Id].second + d/2, QPen(color));
+        nnView->scene()->addLine(nodes[n1Id].first + d/2, nodes[n1Id].second + d/2,
+                                 nodes[n2Id].first + d/2, nodes[n2Id].second + d/2, QPen(color));
 
 
-        nnView->scene()->addLine(nodes[n1Id].first + o1 + d/2, nodes[n1Id].second + o2 + d/2,
-                                 nodes[n2Id].first + o3 + d/2, nodes[n2Id].second + o4 + d/2, QPen(color));
+//        nnView->scene()->addLine(nodes[n1Id].first + o1 + d/2, nodes[n1Id].second + o2 + d/2,
+//                                 nodes[n2Id].first + o3 + d/2, nodes[n2Id].second + o4 + d/2, QPen(color));
     }
 
     nnView->scene()->setSceneRect(nnView->scene()->itemsBoundingRect());
@@ -534,11 +499,11 @@ void Game::spawnObjectsInArea(int area)
         scene->addItem(item);
     }
 
-    QGraphicsLineItem* line = new QGraphicsLineItem(leftBound->pos().x() + boundW/2,
-                                                    - area * areaH,
-                                                    rightBound->pos().x() - boundW/2,
-                                                    - area * areaH);
-    scene->addItem(line);
+//    QGraphicsLineItem* line = new QGraphicsLineItem(leftBound->pos().x() + boundW/2,
+//                                                    - area * areaH,
+//                                                    rightBound->pos().x() - boundW/2,
+//                                                    - area * areaH);
+//    scene->addItem(line);
 }
 
 void Game::spawnObjects()
@@ -567,12 +532,6 @@ void Game::spawnObjects()
 void Game::deleteObjects()
 {
     foreach (QGraphicsItem* item, scene->items()) {
-        if (Player *player = dynamic_cast<Player*>(item)){
-            if(player->pos().y() > cat->pos().y()){
-                player->alive = false;
-                continue;
-            }
-        }
         if (item->pos().y() > cat->pos().y() + 500){
             if (Cheese *cheese = dynamic_cast<Cheese*>(item)){
                 cheese->deleteLater();

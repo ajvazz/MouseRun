@@ -88,6 +88,8 @@ void Genome::mutate()
     } else if(r < weightsProb + connectionProb) {
 //        qDebug() << "addConnection mutation";
         addConnection();
+
+
     } else if(r < weightsProb + connectionProb + nodeProb) {
 //        qDebug() << "addNode mutation";
         addNode();

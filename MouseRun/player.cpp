@@ -40,8 +40,10 @@ Player::Player()
     setZValue(2);
 
     setPos(0, 0);
+//    setFlag(QGraphicsItem::ItemIsFocusable);
+//    setFocus();
 
-    // Update the player
+//    // Update the player
     static QTimer updateTimer;
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(update()));
     updateTimer.start(15);
@@ -155,15 +157,16 @@ double Player::calcFitness()
 {
     double fitness = 0;
 
-    if(!rotated){
-        advanceBonus -= 500;
-    }else{
-        advanceBonus += rotated;
+    if(rotated){
+        fitness += advanceBonus;
     }
 
     if(traveled){
-        fitness = advanceBonus + traveled;
+        fitness += advanceBonus;
     }
+
+    fitness += traveled;
+    fitness += rotated;
 
     return fitness >= 0 ? fitness : 0;
 }
@@ -218,7 +221,7 @@ void Player::move()
         qreal dx = sin(angle) * 20;
         setRotation(rotation() + dx);
         angle = 0;
-        rotated += turningAngle;
+        rotated += abs(dx);
     }
 }
 
@@ -227,7 +230,7 @@ void Player::update()
     inWater = false;
 
     // Player is losing speed over time
-    if(speed > 3)
+    if(speed > maxSpeed/2)
         speed -= consumption;
 
 
@@ -244,7 +247,6 @@ void Player::update()
         // If the item is a trap, die
         else if(dynamic_cast<MouseTrap*>(item)){
             alive = false;
-//            score += trapValue;
         }
 
         else if(dynamic_cast<WaterPool*>(item)){

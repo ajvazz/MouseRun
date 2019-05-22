@@ -16,10 +16,6 @@ public:
 signals:
     void died(size_t i, double score);
 
-public slots:
-    // Update the Game
-    void update();
-
 private:
 
     size_t bestI;
@@ -34,10 +30,7 @@ private:
     // Method that initializes the game
     void start();
 
-    // Method that manages object spawning and removal
     void spawnObjectsInArea(int area);
-    void spawnObjects();
-    void deleteObjects();
 
     QGraphicsItem *leftBound;
     QGraphicsItem *rightBound;
@@ -48,12 +41,18 @@ private:
     qreal boundW;
     int numOfAlive;
 
-    void makeDecisions();
-    void focusBest();
     void drawGenome(Genome* gen);
 
     QGraphicsView* nnView;
     double distanceBetween(QGraphicsItem *a, QGraphicsItem *b);
+
+private slots:
+    void update();
+    void spawnObjects();
+    void deleteObjects();
+    void focusBest();
+    void makeDecisions();
+
 };
 
 #endif // GAME_H
