@@ -33,14 +33,6 @@ Controller::Controller()
                 Qt::DirectConnection);
     }
 
-
-//    for(int i = 0; i < numOfGenerations; i++) {
-//        runGeneration();
-//        time.restart();
-//        numGenomesDone = 0;
-//    }
-
-//    qDebug() << "runGeneration";
     runGeneration(0);
 }
 
@@ -72,9 +64,7 @@ void Controller::calculateFitness(size_t i, double score)
              << "Synapses: " << population[i]->connections.size()
              << "Neurons: " << population[i]->nodes.size()
              << "Layers: " << population[i]->layers;
-//    for(int j = 0; j < population[i]->connections.size(); j++) {
-//        qDebug() << "innonum: " << population[i]->connections[j]->innovationNumber << population[i]->connections[j]->weight;
-//    }
+
     numGenomesDone++;
     if(numGenomesDone == populationSize) {
         generationNum++;
@@ -99,9 +89,6 @@ void Controller::runGeneration(int bNum)
 
 void Controller::evolve()
 {
-//    qDebug() << "evolve";
-
-
     // Speciate
     for(size_t i = 0; i < population.size(); i++) {
         bool newSpecies = true;
@@ -109,13 +96,11 @@ void Controller::evolve()
             if(species[j]->isSameSpecies(*population[i])) {
                 species[j]->addToSpecies(population[i]);
                 newSpecies = false;
-//                qDebug() << "same species";
                 break;
             }
         }
 
         if (newSpecies) {
-//            qDebug() << "new species";
             species.push_back(new Species(population[i]));
         }
     }
@@ -131,7 +116,6 @@ void Controller::evolve()
 
 
         if (!species[i]->allowedReproduction) {
-//            qDebug() << "jaoov";
             continue;
             // maybe delete this species
         }
@@ -145,45 +129,34 @@ void Controller::evolve()
     std::sort(species.begin(), species.end(),
               [](const Species *a, const Species *b){return a->averageFitness > b->averageFitness;} );
 
-//    qDebug() << species.size();
     for(size_t i = 0; i < species.size(); i++) {
 
 
         if (!species[i]->allowedReproduction) {
-//            qDebug() << "jalov";
             continue;
             // maybe delete this species
         }
-//        qDebug() << "newpopsize: " << newPopulation.size();
 
         newPopulation.push_back(species[i]->representGenome->clone());
 
         int numOffspring = std::floor(species[i]->averageFitness / averageFitnessSum * populationSize) - 1;
 
-//        qDebug() << "numOffspring: " << numOffspring;
-//        qDebug() << "SACE UNUTRASNJI FOR";
         for(int j = 0; j < numOffspring; j++) {
-//            qDebug() << "FOR: " << species[i]->genomes.size();
             newPopulation.push_back(species[i]->createOffspring());
-//            qDebug() << "posle FOR-a: " << species[i]->genomes.size();
         }
-//        qDebug() << "GOTOV UNUTRASNJI FOR";
     }
 
     // the rest chosen from best species
     while(newPopulation.size() < populationSize) {
-//        qDebug() << "fali nesto";
         newPopulation.push_back(species[0]->createOffspring());
     }
 
-    // TODO interspecies breeding (0.001 prob)
 
     population.clear();
     for(size_t i = 0; i < populationSize; i++) {
         population.push_back(newPopulation[i]);
     }
 
-//    qDebug() << "novi: ";
     // connect newly created population of genomes to slots
     for(size_t i = 0; i < populationSize; i++) {
         connect(population[i], SIGNAL(nodeIdNeeded(Genome*, int)),
@@ -194,12 +167,10 @@ void Controller::evolve()
                 this, SLOT(getConnId(Genome*, int, int)),
                 Qt::DirectConnection);
 
-//        qDebug() << population[i];
     }
 
     // mutate...
     for(size_t i = 0; i < populationSize; i++) {
-//        qDebug() << "petlja: mutate: " << i;
         population[i]->mutate();
     }
 

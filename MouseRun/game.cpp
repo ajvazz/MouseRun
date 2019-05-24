@@ -44,7 +44,6 @@ Game::Game(std::vector<Genome*> genomes, unsigned bId)
     // Window for nn
     nnView = new QGraphicsView();
     nnView->setScene(new QGraphicsScene(nnView));
-//    nnView->setSceneRect(0, 0, 300, 800);
     nnView->setRenderHint(QPainter::Antialiasing);
     nnView->move(600, 0);
     move(0,0);
@@ -186,16 +185,13 @@ void Game::makeDecisions()
 
             foreach (QGraphicsItem* item, visibleRight) {
                 if(Cheese* x = dynamic_cast<Cheese*>(item)) {
-//                  qDebug() << "CHEESE";
                     inputs.push_back(100);
                 }
                 else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {
-//                  qDebug() << "TRAP";
                     inputs.push_back(-100);
                     mice[i]->advanceBonus++;
                 }
                 else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {
-//                  qDebug() << "POOL";
                     inputs.push_back(-10);
                     mice[i]->advanceBonus++;
                 }
@@ -212,61 +208,6 @@ void Game::makeDecisions()
                 inputs.push_back(0);
             }
 
-// INPUTS V1
-/*
-//            qDebug() << scene->items().size();
-//             Mouse can only see items 1 area ahead (2 x (2 traps, 2 pools, 8 cheese) = 24 items)
-            std::vector<QGraphicsItem*> currentArea;
-            std::vector<QGraphicsItem*> nextArea;
-
-            foreach (QGraphicsItem* item, scene->items(Qt::AscendingOrder)) {
-
-                if(WaterBound* x = dynamic_cast<WaterBound*>(item)) { continue; }
-                else if(Cheese* x = dynamic_cast<Cheese*>(item)) {}
-                else if(MouseTrap* x = dynamic_cast<MouseTrap*>(item)) {}
-                else if(WaterPool* x = dynamic_cast<WaterPool*>(item)) {}
-                else {
-                    continue;
-                }
-
-                double mousePos = mice[i]->pos().y();
-                double itemPos = item->pos().y();
-                double firstAreaStart = int(mousePos / areaH) * areaH + (areaH - bla);
-                double nextAreaStart = firstAreaStart - areaH;
-                double nextAreaEnd = nextAreaStart - areaH;
-
-
-                if(itemPos < firstAreaStart && itemPos > nextAreaStart){
-                    currentArea.push_back(item);
-                }else if(itemPos < nextAreaStart && itemPos > nextAreaEnd){
-                    nextArea.push_back(item);
-                }
-            }
-
-            if(currentArea.empty()){
-                for(size_t j=0; j<24; j++){
-                    inputs.push_back(0.0);
-                }
-            }
-
-//            qDebug() << currentArea.size() << nextArea.size();
-
-            for(size_t j=0; j<currentArea.size(); j++){
-                double itemX = currentArea[j]->pos().x();
-                double itemY = currentArea[j]->pos().y();
-                inputs.push_back(itemX);
-                inputs.push_back(itemY);
-            }
-
-            for(size_t j=0; j<nextArea.size(); j++){
-                double itemX = nextArea[j]->pos().x();
-                double itemY = nextArea[j]->pos().y();
-                inputs.push_back(itemX);
-                inputs.push_back(itemY);
-            }
-
-//            qDebug() << inputs.size();
-*/
 //OUTPUTS
 
 
@@ -281,8 +222,6 @@ void Game::makeDecisions()
 
 void Game::update()
 {
-    //    qDebug() << bestI;
-
     // check for dead mice, determine best mouse
     for(size_t i = 0; i < mice.size(); i++){
 
@@ -294,7 +233,6 @@ void Game::update()
 
         if (!mice[i]->alive){
             // A player died
-//            qDebug() << "time" << time.elapsed();
 
             // fitness function
             double fitness = mice[i]->calcFitness();
@@ -377,21 +315,18 @@ void Game::drawGenome(Genome *gen)
         }else{
             layers[l]++;
         }
-//        qDebug() << l;
         nodes[id] = std::make_pair(l * offsetL, layers[l] * offset);
 
         node->setPos(nodes[id].first, nodes[id].second);
         nnView->scene()->addItem(node);
     }
     layers.clear();
-//    qDebug() << gen->connections.size();
 
     for(size_t i = 0; i < gen->connections.size(); i++){
 
 
         int n1Id = gen->connections[i]->inNode->id;
         int n2Id = gen->connections[i]->outNode->id;
-//        qDebug() << gen->connections[i]->inNode->id << gen->connections[i]->outNode->id;
 
         double r = 0;
         double g = 0;
@@ -410,22 +345,12 @@ void Game::drawGenome(Genome *gen)
             b = 255;
         }
 
-//        std::random_device rd;
-//        std::mt19937 gen(rd());
-//        std::uniform_real_distribution<> dist(-d/2, d/2);
-
-//        double o1 = dist(gen);
-//        double o2 = dist(gen);
-//        double o3 = dist(gen);
-//        double o4 = dist(gen);
 
         QColor color(r,g,b);
         nnView->scene()->addLine(nodes[n1Id].first + d/2, nodes[n1Id].second + d/2,
                                  nodes[n2Id].first + d/2, nodes[n2Id].second + d/2, QPen(color));
 
 
-//        nnView->scene()->addLine(nodes[n1Id].first + o1 + d/2, nodes[n1Id].second + o2 + d/2,
-//                                 nodes[n2Id].first + o3 + d/2, nodes[n2Id].second + o4 + d/2, QPen(color));
     }
 
     nnView->scene()->setSceneRect(nnView->scene()->itemsBoundingRect());

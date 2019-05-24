@@ -40,8 +40,6 @@ Player::Player()
     setZValue(2);
 
     setPos(0, 0);
-//    setFlag(QGraphicsItem::ItemIsFocusable);
-//    setFocus();
 
 //    // Update the player
     static QTimer updateTimer;
@@ -86,9 +84,6 @@ void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget 
 {
     painter->setRenderHint(QPainter::Antialiasing);
 
-//    painter->drawRect(fieldOfVisionForward());
-//    painter->drawRect(fieldOfVisionLeft());
-//    painter->drawRect(fieldOfVisionRight());
 
     // Body
     painter->setBrush(color);
@@ -242,7 +237,6 @@ void Player::update()
         if(Cheese *cheese = dynamic_cast<Cheese*>(item)){
             advanceBonus++;
             speed = maxSpeed;
-//          cheese->deleteLater();
         }
         // If the item is a trap, die
         else if(dynamic_cast<MouseTrap*>(item)){

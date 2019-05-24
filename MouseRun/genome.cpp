@@ -34,7 +34,6 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
     }
     nodes[biasNodeId]->outputValue = 1;
 
-//    qDebug() << nodes;
     // nodes should be activated layer by layer
     std::vector<NodeGene*> sortedNodes = nodes;
     std::sort(sortedNodes.begin(), sortedNodes.end(),
@@ -43,7 +42,6 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
 
 
     for(auto&& node : sortedNodes) {
-//        qDebug() << "feedForward: " << node->outputConnections.size();
         node->activate();
     }
 
@@ -56,7 +54,6 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
     // reset inputSum
     for(auto&& node : nodes) {
         node->inputSum = 0;
-//        qDebug() << "feedForward 2: " << node->outputConnections.size();
     }
 
     return result;
@@ -65,8 +62,6 @@ std::vector<double> Genome::feedForward(std::vector<double> inputValues)
 void Genome::mutate()
 {
     connectNodes();
-//    qDebug() << "mutate genome";
-//    qDebug() << "mutate: " << connections.size();
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(0, 1);
@@ -77,7 +72,6 @@ void Genome::mutate()
     double nodeProb = 0.03;
 
     if(r < weightsProb) {
-//        qDebug() << "weights mutation";
         // Add connection if no connections exist
         if(connections.empty()) {
             addConnection();
@@ -86,12 +80,10 @@ void Genome::mutate()
             conn->mutateWeight();
         }
     } else if(r < weightsProb + connectionProb) {
-//        qDebug() << "addConnection mutation";
         addConnection();
 
 
     } else if(r < weightsProb + connectionProb + nodeProb) {
-//        qDebug() << "addNode mutation";
         addNode();
     }
     connectNodes();
@@ -121,27 +113,21 @@ void Genome::addNode()
     // disable picked connection
     connection->enabled = false;
 
-//    qDebug() << "addNode: signal";
     emit nodeIdNeeded(this, connection->innovationNumber);
-//    qDebug() << "posle signala: " << newNodeId;
     // they are connected with Qt::DirectConnection, so the slot will execute by now - newNodeId will be correct
     NodeGene *newNode = new NodeGene(newNodeId, connection->inNode->layer + 1);
-//    qDebug() << "ADD NODE" << connection->inNode->layer + 1;
 
     emit connectionIdNeeded(this, connection->inNode->id, newNodeId);
-//    qDebug() << "posle 2. signala: " << newConnectionId;
     // newConnectionId is set  - create connection between old inNode and new node
     ConnectionGene *connection1 = new ConnectionGene(connection->inNode, newNode, 1, newConnectionId);
     connections.push_back(connection1);
 
     emit connectionIdNeeded(this, newNodeId, connection->outNode->id);
-//    qDebug() << "posle 3. signala: " << newConnectionId;
     // newConnectionId is set - create connection between new node and old outNode
     ConnectionGene *connection2 = new ConnectionGene(newNode, connection->outNode, connection->weight, newConnectionId);
     connections.push_back(connection2);
 
     emit connectionIdNeeded(this, biasNodeId, newNodeId);
-//    qDebug() << "posle 4. signala: " << newConnectionId;
     // newConnectionId is set - create connection between bias node and new node
     ConnectionGene *connection3 = new ConnectionGene(nodes[biasNodeId], newNode, 0, newConnectionId);
     connections.push_back(connection3);
@@ -156,12 +142,7 @@ void Genome::addNode()
     }
     nodes.push_back(newNode);
 
-//    qDebug() << "pred kraj";
     // update changed connections
-//    connection->inNode->outputConnections.push_back(connection1);
-//    newNode->outputConnections.push_back(connection2);
-//    nodes[biasNodeId]->outputConnections.push_back(connection3);
-
     connectNodes();
 }
 
@@ -187,10 +168,6 @@ void Genome::addConnection()
     }
 
 
-//    qDebug() << "fja: addConnection" << connections.size();
-//    for(size_t i = 0; i < nodes.size(); i++) {
-//        qDebug() << nodes[i]->outputConnections.size();
-//    }
     // pick two nodes
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -198,45 +175,23 @@ void Genome::addConnection()
     NodeGene *fromNode = nodes[dist(gen)];
     NodeGene *toNode = nodes[dist(gen)];
 
-    // nije nula?????
-//    qDebug() << "fromNode: " << fromNode->outputConnections.size();
-//    qDebug() << "toNode: " << toNode->outputConnections.size();
-
-
-//    if(fromNode->layer == toNode->layer) {
-//        qDebug() << "lejers";
-//    }
-//    if(fromNode->isConnectedTo(toNode)) {
-//        qDebug() << "povezani";
-//    }
-//    if(toNode->isConnectedTo(fromNode)) {
-//        qDebug() << "povezani 2";
-//    }
-
 
     while(fromNode->layer == toNode->layer || fromNode->isConnectedTo(toNode) || toNode->isConnectedTo(fromNode)) {
-//        qDebug() << "while...";
         fromNode = nodes[dist(gen)];
         toNode = nodes[dist(gen)];
     }
-
-//    qDebug() << "From " << fromNode->id << " To " << toNode->id;
 
     // swap if needed
     if(fromNode->layer > toNode->layer) {
         std::swap(fromNode, toNode);
     }
 
-//    qDebug() << "pre EMIT-a: fromNode->id = " << fromNode->id << ", toNode->id = " << toNode->id;
     emit connectionIdNeeded(this, fromNode->id, toNode->id);
-//    qDebug() << "posle EMIT-a: newConnectionId = " << newConnectionId;
     std::uniform_real_distribution<> distReal(-1, 1);
     ConnectionGene *connection = new ConnectionGene(fromNode, toNode, distReal(gen), newConnectionId);
     connections.push_back(connection);
 
     // update changed connections
-//    fromNode->outputConnections.push_back(connection);
-
     connectNodes();
 }
 
@@ -246,7 +201,6 @@ Genome* Genome::crossover(Genome *other)
     child->layers = layers;
     child->biasNodeId = biasNodeId;
     // all nodes are inherited from more fit parent - this Genome
-//    child->nodes = nodes;
     child->nodes.clear();
     for(size_t i = 0; i < nodes.size(); i++){
         child->nodes.push_back(new NodeGene(nodes[i]->id, nodes[i]->layer));
@@ -265,7 +219,6 @@ Genome* Genome::crossover(Genome *other)
         }
 
         if(!childInNode || !childOutNode){
-            qDebug() << "Something is very wrong with this child...";
             continue; // This should never happen
         }
 
@@ -332,7 +285,6 @@ Genome *Genome::clone()
     genome->fitness = fitness;
     genome->newNodeId = newNodeId;
     genome->biasNodeId = biasNodeId;
-//    genome->connections = connections;
     for(size_t i = 0; i < connections.size(); i++){
 
         NodeGene *cloneInNode = nullptr;
@@ -356,7 +308,6 @@ Genome *Genome::clone()
             con->enabled = connections[i]->enabled;
             genome->connections.push_back(con);
         }else{
-            qDebug() << "Something is very wrong with this clone...";
             continue; // This should never happen
         }
 

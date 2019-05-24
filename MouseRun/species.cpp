@@ -18,7 +18,7 @@ bool Species::isSameSpecies(const Genome &genome)
     unsigned matchingExcessDisjoint = 0;
 
     // These are used a lot, move to variable
-    size_t genomeConnSize = genome.connections.size();  // NOTE: In genome.h, connections were made public
+    size_t genomeConnSize = genome.connections.size();
     size_t representGenomeConnSize = representGenome->connections.size();
 
     for (size_t i = 0; i < genomeConnSize; i++) {
@@ -35,7 +35,7 @@ bool Species::isSameSpecies(const Genome &genome)
     // Now we need to get the average weight difference between matching genes in the input genomes
 
     double averageWeightDiff = 0;
-    if (genomeConnSize == 0 || representGenomeConnSize == 0) // Maybe these params should be calculated again
+    if (genomeConnSize == 0 || representGenomeConnSize == 0)
         averageWeightDiff = 0;
 
     unsigned matchingWeightDiff = 0;
@@ -52,7 +52,7 @@ bool Species::isSameSpecies(const Genome &genome)
     }
 
     if (matchingWeightDiff == 0) // division by 0
-        averageWeightDiff = 1; // something else ?
+        averageWeightDiff = 1;
     else
         averageWeightDiff = totalDiff / matchingWeightDiff;
 
@@ -65,8 +65,6 @@ bool Species::isSameSpecies(const Genome &genome)
     // Now calculate the compatibility function
     double tmp1 = excessCoeff * excessAndDisjoint / largeGenomeNormalizer;
     double compatibilityDistance = tmp1 + (weightDiffCoeff * averageWeightDiff);
-
-//    qDebug() << "compatibilityDistance: " << compatibilityDistance;
 
     return (compatibilityThreshold > compatibilityDistance);
 }
@@ -84,7 +82,6 @@ void Species::sortGenomesByFitness()
         representGenome = genomes[0];
 
     } else {
-        // stagnantCoeff++;
         if (++stagnantCoeff > 15) {         // Too stale, don't reproduce
             allowedReproduction = false;
         }
@@ -98,7 +95,6 @@ void Species::addToSpecies(Genome *genome)
 
 Genome* Species::createOffspring()
 {
-//    qDebug() << "species: createOffspring" << genomes.size();
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(0, 1);
@@ -106,11 +102,9 @@ Genome* Species::createOffspring()
     Genome* offspring = nullptr;
 
     if (r < 0.25) {
-//        qDebug() << "clone";
         offspring = selectParent()->clone();
 
     } else {
-//        qDebug() << "parents";
         Genome *p1 = selectParent();
         Genome *p2 = selectParent();
 
@@ -120,9 +114,6 @@ Genome* Species::createOffspring()
             offspring = p2->crossover(p1);
         }
     }
-//    offspring->mutate();
-
-//    qDebug() << "species: createOffspring end" << genomes.size();
 
     return offspring;
 }
@@ -131,15 +122,10 @@ Genome* Species::selectParent()
 {
     // Finding a Genome using roulette selection
 
-//    qDebug() << "selectParent: start";
-//    qDebug() << "genomes: " << genomes.size();
     double totalSpeciesFitness = std::accumulate(genomes.cbegin(), genomes.cend(), 0,
-        [](double acc, Genome *p) {    // is an error
-//            qDebug() << "fitness: " << p->fitness;
-//            qDebug() << "acc: " << acc;
+        [](double acc, Genome *p) {
             return p->fitness + acc;
     });
-//    qDebug() << "selectParent: accumulate" << genomes.size();
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -155,7 +141,6 @@ Genome* Species::selectParent()
 
     // This will never execute, but return value must exist. Pick a random Genome
     std::uniform_real_distribution<> dist1(0, genomes.size()-1);
-    qDebug() << "Something is very wrong with select parent...";
     return genomes[static_cast<size_t>(dist1(gen))];
 }
 
@@ -168,21 +153,19 @@ void Species::explicitFitnessSharing()
 
 void Species::decimateSpecies()
 {
-//    qDebug() << "decimate: " << genomes.size();
     if (genomes.size() <= 20)
         return;
 
     // Remove the second (worse) half of the species
     genomes.resize(genomes.size() / 2);
 
-//    qDebug() << "decimate end: " << genomes.size();
 }
 
 // Calculate average fitness in the species (setter, not getter)
 void Species::calcAverageFitness()
 {
     double sum = std::accumulate(genomes.cbegin(), genomes.cend(), 0,
-        [](double acc, Genome *p){    // Could be an error
+        [](double acc, Genome *p){
             return p->fitness + acc;
     });
 
