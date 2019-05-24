@@ -114,7 +114,7 @@
 %----------------------------------------------------------------------------------------
 
 \abstract{
-\textcolor{red}{Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju Ovo na kraju }
+U uvodu ćemo ukratko predstaviti NEAT algoritam, a u nastavku se nalazi opis problema koji ovaj projekat treba da reši. U poglavlju \ref{implementacija} će biti predstavljena struktura projekta kao i kratko objašnjenje implementacije, a u poglavlju \ref{podesavanje} prikaz koliku ulogu podešavanje parametara ima u uspešnom radu neuronske mreže.
 }
 
 \tableofcontents
@@ -128,8 +128,8 @@ NEAT je tehnika treniranja neuronske mreže genetskim algoritmom. Razvili su ga 
 Testovima je pokazano da NEAT nadmašuje i najbolje mreže fiksne topologije kod zahtevnih zadataka sa pojačanim učenjem (\emph{eng. reinforcment learning}).
 \\
 
-Ova tehnika, kao i većina neuronskih mreža, se može koristiti u raznim oblastima. Budući da se NEAT oslanja na neuro-evoluciju, njegovi tvorci smatraju da se algoritam veoma dobro snalazi u neprekidnom i visoko-dimenzionom prostoru stanja. Iz tog razloga, ovaj algoritam je primenjiv i na probleme učenja igranja video igara, što ovaj projekat obuhvata.
-\linebreak
+Ova tehnika, kao i većina neuronskih mreža, se može koristiti u raznim oblastima. Budući da se NEAT oslanja na neuro-evoluciju, njegovi tvorci smatraju da se algoritam veoma dobro snalazi u neprekidnom i visoko-dimenzionom prostoru stanja. Iz tog razloga, ovaj algoritam je primenjiv i na probleme učenja igranja video igara, što ovaj projekat obuhvata. \\
+Pored zvanične dokumentacije za ovaj algoritam, koristili smo se i literaturom o veštačkoj inteligenciji u kreiranju video igara \cite{ai_techs}.
 
 
 \section{Opis problema}
@@ -172,15 +172,13 @@ Prednost NEAT algoritma je u tome što prvo minimizuje strukturu mreže kroz evo
 \item kako očuvati topologije kojima je potrebno nekoliko generacija za optimizaciju
 \item kako minimizovati topologiju \emph{kroz evoluciju} bez posebnih testiranja kompleksnosti
 \end{enumerate}
-Rešenja problema su ukratko objašnjena u nastavku.
-
-\pagebreak
+Rešenja problema su ukratko objašnjena u nastavku. \\
 
 \noindent
 \label{reprezentacija}
 \textbf{1. Odabir reprezentacije} \\
 \indent
-Mreže se mogu predstaviti direktnim i indirektnim enkodiranjem. Direktno enkodiranje tačno navodi čvorove i grane u fenotipu\footnote{~~Fenotip je skup osobina organizma koje su nastale zajedničkim delovanjem genotipova i uslova sredine u kojoj se organizam razvija}, ono je jednostavnije i koriste ga većina mreža.\\
+Mreže se mogu predstaviti direktnim i indirektnim enkodiranjem. Direktno enkodiranje tačno navodi čvorove i grane u fenotipu\footnote{~~Fenotip je skup osobina organizma koje su nastale zajedničkim delovanjem genotipova i uslova sredine u kojoj se organizam razvija.}, ono je jednostavnije i koriste ga većina mreža.\\
 Indirektno kodiranje je kompaktnije - navode se samo pravila za konstruisanje fenotipa, čvorovi i grane se mogu izvesti iz tih pravila. NEAT koristi indirektno kodiranje, jer njihova fleksibilnost može da usmeri pretragu na nepredvidive načine. \\
 
 \noindent
@@ -188,7 +186,7 @@ Indirektno kodiranje je kompaktnije - navode se samo pravila za konstruisanje fe
 \textbf{2. Očuvanje specijacijom} \\
 \indent
 Kada se u mrežu doda nova grana, veoma retko će odmah dovesti do poboljšanja performansi. Celokupan fitnes će opasti, jer težina nove grane nije optimizovana. Potrebno je da prođe nekoliko generacija da bi se ta grana poboljšala, ali i u međuvremenu sačuvati da mreža sa takvom nestabilnom strukturom ne bude odbačena.\\
-Rešenje toga leži u specijaciji, a ona predstavlja grupisanje organizama u vrste koji imaju slične karakteristike. Kod algoritma NEAT, to se radi preko funkcije \textit{explicit fitness sharing}. Ideja je da se populacija podeli na ,,vrste‘‘ i spreči da neka od vrsti postane dominantna u populaciji, jer ima visok stepen prilagođenosti. To se radi tako što se vrednosti fitnesa normalizuju veličinom trenutne populacije i njihove celokupne sposobnosti. \textcolor{red}{Možda ulepšati ovo malo} \\
+Rešenje toga leži u specijaciji, a ona predstavlja grupisanje organizama u vrste koji imaju slične karakteristike. Kod algoritma NEAT, to se radi preko funkcije \emph{explicit fitness sharing}. Ideja je da se populacija podeli na ,,vrste‘‘ i spreči da neka od vrsti postane dominantna u populaciji, jer ima visok stepen prilagođenosti. To se radi tako što se vrednosti fitnesa normalizuju veličinom trenutne populacije i njihove celokupne sposobnosti. \\
 
 \noindent
 \label{specijacija}
@@ -199,8 +197,6 @@ Kod određenih vrsta mreža, najlakši način da se očuva minimalnost je smanji
 \section{Implementacija NEAT algoritma}
 \label{implementacija}
 
-\textcolor{red}{(Možda treba neki bolji uvod u ovo)}
-
 U nastavku će ukratko biti opisani najbitniji delovi klasa programa, a zatim princip rada važnijih delova algoritma.
 
 \subsection{Struktura programa}
@@ -208,13 +204,13 @@ U nastavku će ukratko biti opisani najbitniji delovi klasa programa, a zatim pr
 
 \begin{itemize}
 
-\item \textbf{Genome} - reprezentacija jedne instance neuronske mreže. Sadrži listu čvorova i grana mreže, broj ulaza, izlaza, slojeva i koeficijent fitnesa kao merilo prilagođenosti. Sadrži funkciju koja prolazi kroz mrežu i na osnovu njene uspešnosti daje različite komande miševima. Genom može i da se ukršta i mutira, ali o tome više reči kasnije.
+\item \textbf{Genome} - reprezentacija jedne instance neuronske mreže. Sadrži listu čvorova i grana mreže, broj ulaza, izlaza, slojeva i koeficijent fitnesa kao merilo prilagođenosti. Sadrži funkciju koja prolazi kroz mrežu i na osnovu njene uspešnosti daje različite komande miševima. Genom može i da se ukršta i mutira.
 
 \item \textbf{NodeGene} - predstavlja čvor mreže. Svaki čvor pamti identifikator, u kom se sloju nalazi, sa kim je povezan i izlaznu vrednost koju propagira kroz mrežu nakon aktivacije.
 
-\item \textbf{ConnectionGene} - predstavlja granu mreže. Čuva ulazni i izlazni čvor, težinu, inovativni broj, kao i funkciju koja mutira težinu grane.
+\item \textbf{ConnectionGene} - predstavlja granu mreže. Čuva ulazni i izlazni čvor, težinu i inovativni broj\footnote{~~Broj koji predstavlja jedinstvenu globalnu oznaku gena.}.
 
-\item \textbf{Species} - predstavlja vrstu unutar generacije. U njoj se nalaze slične instance klase \emph{Genome}, u kojoj se čuva najbolja i prosečna prilagođenost, najbolja jedinka, kao i indikatori da li je vrsta zaostala. Postoje funkcije za utvrđivanje pripadnosti vrsti, kreiranja nove jedinke, ali i uništavanje vrste ako stagnira.
+\item \textbf{Species} - predstavlja vrste unutar generacije. U njoj se nalaze slične instance klase \emph{Genome}, u kojoj se čuva najbolja i prosečna prilagođenost, najbolja jedinka, kao i indikatori da li je vrsta zaostala. Postoje funkcije za utvrđivanje pripadnosti vrsti, kreiranja nove jedinke, ali i uništavanje vrste ako stagnira.
 
 \item \textbf{Game} - predstavlja instancu jedne partije igre. Pošto jedna partija sadrži nekoliko desetina miševa, pored svih njih pamti i identifikator najboljeg.
 
@@ -227,25 +223,76 @@ U nastavku će ukratko biti opisani najbitniji delovi klasa programa, a zatim pr
 \textbf{Mutacija} kod NEAT algoritma ne menja samo težine grana, već i topologiju mreže - tako raste od minimalne ka optimalnoj. Topologija mreže može se izmeniti na dva načina:
 \begin{enumerate}[topsep=1pt, itemsep=-1ex, partopsep=1ex, parsep=1ex]
 \item \textbf{dodavanje grana} - nova grana se stvara i spaja dva do sad nepovezana čvora, a težina grane se određuje na slučajan način.
-\item \textbf{dodavanje čvorova} - postojeća grana se deli i onemogućava, zatim se pravi novi čvor na njoj koji je povezan sa ista dva čvora kao i prethodna grana. Nova grana koja vodi u novi čvor će imati težinu 1, grana koja vodi iz novog čvora će zadržati prethodnu težinu.
+\item \textbf{dodavanje čvorova} - postojeća grana se deli i onemogućava, zatim se pravi novi čvor na njoj koji je povezan sa ista dva čvora kao i prethodna grana. Nova grana koja vodi u novi čvor će imati težinu 1, grana koja vodi iz novog čvora će zadržati prethodnu težinu.\\
 \end{enumerate}
 
-Kao što je ranije rečeno, dodavanje novih grana ne mora da znači da će postojati negativan uticaj na mrežu, \textbf{specijacijom} se ona može očuvati kroz generacije. \\
+Kao što je ranije rečeno, dodavanje novih grana ne mora da znači da će postojati negativan uticaj na mrežu, \textbf{specijacijom} se ona može očuvati kroz generacije. Ona funkcioniše tako što za jedinku proveravamo koliko ima sličnu strukturu sa ostalim jedinkama u vrsti, uparimo ih po njihovom inovativnom broju i merimo broj čvorova koji su višak (\emph{eng. excess}) i razdvojeni (\emph{eng. disjoint}). Višak su čvorovi koji se ne podudaraju na kraju, a razdvojeni oni koji se ne podudaraju u sredini. Na slici \ref{fig:genomes} se nalazi primer.
 
-Kada je u pitanju \textbf{ukrštanje} genoma... \textcolor{red}{ispricati algoritam...} \\
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=190px, keepaspectratio]{matching.png}
+\end{center}
+\caption{Poklapanje čvorova dve mreže}
+\label{fig:genomes}
+\end{figure}
 
-Svaki put kada se pojavi novi genom, uveća se globalni \textbf{inovativni broj}, i dodeli mu se.
-\textcolor{red}{Objasniti inovativni broj, smandrljao sam, već je 4am gotov sam :(}
+Nakon računanja takvih čvorova, po sledećoj formuli se određuje da li će jedinka pripasti vrsti:
+
+\begin{center}
+$\delta = \dfrac{c1 \cdot{E}}{N} + \dfrac{c2 \cdot{D} }{N} + c3 \cdot \overline{W} $, \\
+\end{center}
+gde je $\delta$ rastojanje podudarnosti, $E$ broj višak čvorova, $D$ broj razdvojenih čvorova, $\overline{W}$ prosečno rastojanje težina kod čvorova koji se podudaraju, a $N$ broj grana u većoj jedinci. Koeficijenti $c1, c2, c3$ su parametri koji balansiraju važnost ova tri faktora. Ako je $\delta$ veće od unapred postavljenog praga $\delta_t$, jedinka pripada vrsti.\\
+Ranije smo naveli funkciju \emph{explicit fitness sharing} i njenu ulogu, a sada navodimo kako se ta nova prilagođenost računa za svaki organizam $i$:
+
+\begin{center}
+$ f_i' = \dfrac{f_i}{ \sum_{j=1}^{n} sh(\delta(i,j)) } $, \\
+\end{center}
+gde je $sh(\delta(i,j))=1$ ako je $\delta > \delta_t$, inače je 0.\\
+
+Kada je u pitanju \textbf{ukrštanje} genoma, sličan je postupak kao kod merenja pripadnosti neke jedinke vrsti. Za dve jedinke koje želimo da ukrstimo se prvo poređaju grane sa istim inovativnim brojem, i one se nasumično prosleđuju u dete, dok se geni koji se ne poklapaju nasleđuju od prilagođenijeg roditelja.
 
 \section{Podešavanje parametara i rezultati}
 \label{podesavanje}
 
-\textcolor{red}{TODO}
+\textcolor{red}{TODO} \\
+Na slikama ispod se mogu videti stanja igre u početnim fazama.
+
+\begin{figure}[!h]
+  \centering
+  \begin{minipage}[b]{0.4\textwidth}
+    \includegraphics[width=175px]{gen0_batch1.png}
+    \caption{Generacija 0, serija 1.}
+    \label{fig:gen0batch1}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[b]{0.4\textwidth}
+    \includegraphics[width=175px]{gen1_batch1.png}
+    \caption{Generacija 1, serija 1.}
+    \label{fig:gen1batch1}
+  \end{minipage}
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+  \begin{minipage}[b]{0.4\textwidth}
+    \includegraphics[width=175px]{gen1_batch5.png}
+    \caption{Generacija 1, serija 5.}
+    \label{fig:gen0batch1}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[b]{0.4\textwidth}
+    \includegraphics[width=175px]{gen2_batch3.png}
+    \caption{Generacija 2, serija 3.}
+    \label{fig:gen1batch1}
+  \end{minipage}
+\end{figure}
+
+\pagebreak
 
 \section{Zaključak}
 \label{sec:zakljucak}
 
-\textcolor{red}{TODO}
+NEAT je jedan veoma koristan, ali i dosta kompleksan algoritam. Rezultati koje on daje su vidno bolji od mnogih drugih algoritama sa neuronskim mrežama. Smatramo da je mreža prilično dobro savladala igricu, budući da su najuspešniji pojedinci uspeli da nadmaše najbolji rezultat svakog od autora ovog projekta, iako nismo imali hardver ogromnih performansi za učenje mreže. Danas je ova oblast veoma popularna, i sigurno je da će oblast neuro-evolucije nastaviti da se koristi u problemima raznih sfera.
 
 \pagebreak
 
