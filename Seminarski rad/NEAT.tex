@@ -240,7 +240,27 @@ Svaki put kada se pojavi novi genom, uveća se globalni \textbf{inovativni broj}
 \section{Podešavanje parametara i rezultati}
 \label{podesavanje}
 
-\textcolor{red}{TODO}
+Veći problem od same implementacije algoritma bio je izbor odgovarajućih parametara - veličina populacije, funkcija cilja kao i ulazne vrednosti za neuronsku mrežu. 
+
+\begin{itemize}
+
+\item \textbf{Veličina populacije} - Zbog hardverskih ograničenja, velike populacije su pravile dva problema:
+\begin{enumerate}
+\item Ocenjivanje je bilo sporo - ovaj problem smo rešili podelom populacije na manje grupe od 100 jedinki, pa bi se ocenjivanje vršilo po grupama umesto na celoj populaciji odjednom.
+\item Stvaranje sledeće generacije je bilo sporo - ovaj problem smo mogli da izbegnemo jedino ograničavanjem veličine populacije na 1000-2000.
+\end{enumerate}
+
+
+\item \textbf{Funkcija cilja} - Početna ideja je bila da ocena za igrača bude vreme koje je uspeo da ostane u životu. Međutim, nastao je problem u tome što se u prvim generacijama najčešće više isplatilo da samo idu napred. Posle mnogo eksperimentisanja, odlučili smo da uvedemo bonuse za svako kretanje, skretanje, izbgavanje prepreka i konzumiranje sira, kao i penale za prolaske kroz bare, stajanje u mestu i kretanje isključivo u jednom smeru.
+
+\item \textbf{Ulazne vrednosti} - Prva zamisao je bila da svaki igrač može da vidi svoju poziciju, rotaciju, kao i poziciju svih ostalih predmeta na sceni. Glavna mana ovog pristupa je bila to što za veliki broj ulaznih vrednosti, evolucija predugo traje. Da bismo redukovali broj ulaznih vrednosti, dali smo igračima tri senzora - jedan ispred njega i po jedan sa svake strane. Senzor govori igraču da li, i koji objekat se nalazi u njegovoj blizini, kao i tačne koordinate objekta. Na ovaj način, broj ulaznih vrednosti za svaki od senzora je 3, što sa pozicijom i rotacijom igrača čini 12 ulaznih vrednosti. Ovo se pokazalo kao optimalno.
+
+\end{itemize}
+
+Sa ovakvom konfiguracijom, nakon celog dana evolucije i nekoliko stotina generacija, miševi su počeli da uspešno izbegavaju neke prepreke, a neki su uspeli i da opstanu iznenađujuće dugo. Neuronske mreže najboljih jedinki su u tom trenutku imale 20-30 neurona raspoređenih u 3-5 slojeva i 20-30 sinapsi. \\
+
+Zbog vremenskih i hardverskih ograničenja, naš cilj da istreniramo savršenog igrača nije ostvaren, ali evolucija i napredak se jasno mogu videti. Čovek je i dalje u staju da postigne bolji rezultat, ali imajući u vidu da je broj neurona i sinapsi čoveka daleko veći od 30, to nije iznenađujuće.
+
 
 \section{Zaključak}
 \label{sec:zakljucak}

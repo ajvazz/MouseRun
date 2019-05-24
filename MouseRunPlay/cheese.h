@@ -1,15 +1,14 @@
-#ifndef MOUSETRAP_H
-#define MOUSETRAP_H
+#ifndef CHEESE_H
+#define CHEESE_H
 
-#include <QObject>
 #include <QGraphicsItem>
 
-class MouseTrap : public QObject, public QGraphicsItem
+class Cheese : public QObject, public QGraphicsItem
 {
 public:
-    MouseTrap();
+    Cheese();
 
-//     Methods used for collision detection and drawing, inherited from QGraphicsItem
+//  Methods used for collision detection and drawing, inherited from QGraphicsItem
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
@@ -17,4 +16,4 @@ public:
 
 };
 
-#endif // MOUSETRAP_H
+#endif // CHEESE_H
